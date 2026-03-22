@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Yeni İlan | Joinly</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 style="color: #5d3ebc;">
+    {% if title %}
+        {{ title }}
+    {% else %}
+        🚀 Yeni İlan Oluştur
+    {% endif %}
+</h2>
+            <p style="color: #666; margin-bottom: 25px;">Topluluğa yeni bir duyuru bırakın.</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div style="text-align: left;"> {{ form.as_p }}
+                </div>
+
+                <button type="submit" class="btn-auth" style="margin-top: 20px;">
+                    İlanı Yayınla
+                </button>
+            </form>
+            
+            <div class="auth-footer" style="margin-top: 20px;">
+                <a href="{% url 'home' %}" style="text-decoration: none; color: #777; font-size: 0.9rem;">
+                    ← Vazgeç ve Geri Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+/* Ana Renkler ve Font */
+:root {
+    --primary-color: #5d3ebc; /* Joinly Moru */
+    --secondary-color: #f3f0ff;
+    --text-color: #333;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    color: var(--text-color);
+}
+
+/* Navigasyon Çubuğu */
+.navbar {
+    background-color: white;
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.nav-links a {
+    text-decoration: none;
+    margin-left: 20px;
+    color: var(--text-color);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white !important;
+    padding: 8px 20px;
+    border-radius: 20px;
+}
+
+/* İlanlar Izgarası (Gereksinim 4) */
+.container {
+    padding: 2rem 5%;
+}
+
+.ads-grid {
+    display: grid;
+    gap: 25px;
+    margin-top: 20px;
+}
+
+/* Masaüstü: 4 Sütun */
+@media (min-width: 992px) {
+    .ads-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Tablet/Mobil: 2 Sütun */
+@media (max-width: 991px) {
+    .ads-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* İlan Kartı Tasarımı */
+.ad-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    position: relative;
+    border-top: 5px solid var(--primary-color);
+}
+
+.ad-card:hover {
+    transform: translateY(-5px);
+}
+
+.category-tag {
+    font-size: 0.75rem;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.ad-info {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #777;
+    display: flex;
+    justify-content: space-between;
+}
+/* Form Elemanlarını Güzelleştirme */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #5d3ebc;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Kutunun taşmasını önler */
+}
+
+.form-control:focus {
+    border-color: #5d3ebc;
+    outline: none;
+    box-shadow: 0 0 5px rgba(93, 62, 188, 0.2);
+}
+/* --- SAYFAYI TAM ORTALAYAN KONTEYNER --- */
+.auth-container {
+    display: flex;
+    justify-content: center;    /* Yatayda tam orta */
+    align-items: center;        /* Dikeyde tam orta */
+    min-height: 100vh;          /* Ekranın tüm yüksekliğini kapla */
+    width: 100%;
+    background-color: #f3f0ff;  /* Arka planın o tatlı mor-gri tonu */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* --- ORTADAKİ BEYAZ FORM KARTU --- */
+.auth-card {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px;           /* Kartın çok yayılmaması için ideal genişlik */
+    text-align: center;         /* Başlıkları ortala */
+}
+
+/* --- FORM ALTINDAKİ LİNKLER --- */
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}

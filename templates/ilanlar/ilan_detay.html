@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ ilan.title }} | Joinly</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 600px; text-align: left;">
+            <span class="category-tag" style="background-color: {{ ilan.category.color }}; display: inline-block; margin-bottom: 15px;">
+                {{ ilan.category.name }}
+            </span>
+            <h1 style="color: #5d3ebc; margin: 10px 0;">{{ ilan.title }}</h1>
+            <p style="font-size: 1.1rem; line-height: 1.6; color: #444;">{{ ilan.description }}</p>
+            
+            <div class="ad-info" style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+                <span>👤 <strong>Yayınlayan:</strong> {{ ilan.owner.username }}</span>
+                <span>📍 <strong>Konum:</strong> {{ ilan.location }}</span>
+                <span>📅 <strong>Tarih:</strong> {{ ilan.created_at|date:"d F Y" }}</span>
+            </div>
+
+            {% if user == ilan.owner %}
+                <div style="margin-top: 30px; display: flex; gap: 10px;">
+                    <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn-primary" style="background: #ffa500; text-decoration: none; flex: 1; text-align: center;">
+                        Düzenle
+                    </a>
+                    <a href="{% url 'ilan_sil' ilan.id %}" class="btn-primary" style="background: #ff4d4d; text-decoration: none; flex: 1; text-align: center;">
+                        Sil
+                    </a>
+                </div>
+            {% endif %}
+
+            <div class="auth-footer" style="margin-top: 30px;">
+                <a href="{% url 'home' %}" style="text-decoration: none; color: #777;">← Listeye Geri Dön</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

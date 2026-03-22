@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>İlanı Sil | Joinly</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2 style="color: #ff4d4d;">⚠️ İlanı Silmek Üzeresin</h2>
+            <p><strong>"{{ ilan.title }}"</strong> başlıklı ilanı kalıcı olarak silmek istediğinden emin misin?</p>
+            <p style="font-size: 0.85rem; color: #888; margin-bottom: 25px;">Bu işlem geri alınamaz.</p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn-auth" style="background: #ff4d4d;">
+                    Evet, Kalıcı Olarak Sil
+                </button>
+            </form>
+            
+            <div class="auth-footer" style="margin-top: 25px;">
+                <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration: none; color: #5d3ebc; font-weight: bold;">
+                    ← Vazgeç ve Geri Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
