@@ -1,4 +1,4 @@
-# 🚀 Joinly - Üniversite İlan & Etkinlik Platformu
+# 🚀 Joinly - İlan & Etkinlik Platformu
 
 **Joinly**, İnsanların kendi aralarında etkinlik planlayabildiği, çalışma grupları kurabildiği ve ilan paylaşabildiği dinamik bir web platformudur. Bu proje, **MAT132** dersi kapsamında "Fonksiyonalite ve Kullanıcı Deneyimi" odaklı olarak geliştirilmiştir.
 
