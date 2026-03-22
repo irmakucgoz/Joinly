@@ -4,7 +4,7 @@
 
 ---
 
-## 🛠 Fonksiyonel Özellikler (Utku Hoca'nın Kontrol Listesi)
+## 🛠 Fonksiyonel Özellikler 
 
 Proje, bir veri objesinin yaşam döngüsünü (CRUD) tam olarak simüle etmektedir:
 
