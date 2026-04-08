@@ -15,20 +15,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include # 1. BURAYA 'include' EKLEDİK
-from ilanlar.views import index , ilan_olustur , ilan_detay , ilan_duzenle , ilan_sil
+from django.urls import path, include
+from ilanlar.views import index, ilan_olustur, ilan_detay, ilan_duzenle, ilan_sil
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # 2. SENİN EKLEYECEĞİN SATIR TAM OLARAK BURASI:
+    # Kullanıcı işlemleri (Kayıt, Giriş vb.)
     path('users/', include('users.urls')), 
-    path('', index, name='home'),
+    
+    # İlan İşlemleri
+    # NOT: 'name' kısmını 'index' yaptık ki HTML'deki {% url 'index' %} kodu çalışsın.
+    path('', index, name='index'), 
     path('yeni-ilan/', ilan_olustur, name='ilan_olustur'),
     path('ilan/<int:ilan_id>/', ilan_detay, name='ilan_detay'),
-    # config/urls.py içindeki urlpatterns listesine ekle:
     path('ilan/<int:ilan_id>/duzenle/', ilan_duzenle, name='ilan_duzenle'),
     path('ilan/<int:ilan_id>/sil/', ilan_sil, name='ilan_sil'),
-    # Eğer ilanlar uygulaman hazırsa onu da buraya bağlayabilirsin:
-    # path('', include('ilanlar.urls')), 
 ]
