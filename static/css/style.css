@@ -201,3 +201,34 @@ body {
     border-radius: 15px;
     margin-top: 20px;
 }
+/* --- Profil Sayfası Stilleri --- */
+.profile-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.profile-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Hafif gölge */
+    border-left: 5px solid #5d3ebc; /* Sol tarafta Joinly Moru */
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.profile-card h2 {
+    color: #5d3ebc; /* Başlık Mor */
+    margin-top: 0;
+}
+
+.profile-info {
+    font-size: 1.1rem;
+    color: #555;
+    margin-top: 15px;
+}
+
+.profile-info strong {
+    color: #333;
+}
