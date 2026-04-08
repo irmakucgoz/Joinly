@@ -1,4 +1,6 @@
-{% extends 'index.html' %} {% block content %}
+{% extends 'index.html' %}
+
+{% block content %}
 <div class="profile-container">
     <div class="profile-card">
         <h2>Kullanıcı Profili</h2>
@@ -9,7 +11,7 @@
     </div>
 
     <div class="profile-ads-section">
-        <h3 style="color: #333; text-align: left;">Paylaştığım İlanlar</h3>
+        <h3 style="color: #333; text-align: left; margin-top: 30px;">Paylaştığım İlanlar</h3>
         <div class="profile-ads-grid">
             {% for ilan in ilanlar %}
                 <div class="profile-ad-card">
@@ -18,7 +20,7 @@
                     <a href="{% url 'ilan_detay' ilan.id %}" class="profile-ad-link">Detaylara Git →</a>
                 </div>
             {% empty %}
-                <p style="color: #999;">Henüz bir ilan paylaşmadınız.</p>
+                <p style="color: #999; margin-top: 15px;">Henüz bir ilan paylaşmadınız.</p>
             {% endfor %}
         </div>
     </div>
