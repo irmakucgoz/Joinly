@@ -148,3 +148,56 @@ body {
     margin-top: 20px;
     font-size: 0.9rem;
 }
+/* --- Joinly Arama Çubuğu Tasarımı --- */
+.search-section {
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.search-input-group {
+    display: flex;
+    border: 2px solid #5d3ebc; /* Joinly Moru */
+    border-radius: 30px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+/* Kutuya tıklanınca mor parlasın */
+.search-input-group:focus-within {
+    box-shadow: 0 0 12px rgba(93, 62, 188, 0.25);
+    transform: translateY(-1px);
+}
+
+.search-input-group input {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+}
+
+.search-btn {
+    background: #5d3ebc;
+    color: white;
+    border: none;
+    padding: 0 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #4a319a; /* Üstüne gelince koyulaşan mor */
+}
+
+/* İlan bulunamadığında çıkan yazı tipi */
+.no-ads {
+    text-align: center;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    margin-top: 20px;
+}
