@@ -67,7 +67,7 @@
         </div>
 
         <div class="search-section">
-            <form action="{% url 'index' %}" method="GET" class="search-form">
+            <form action="{% url 'home' %}" method="GET" class="search-form">
                 <div class="search-input-group">
                     <input type="text" name="q" placeholder="Ders, etkinlik veya arkadaş ara..." value="{{ query|default:'' }}">
                     <button type="submit" class="search-btn">Ara</button>
@@ -93,7 +93,7 @@
             {% empty %}
                 <div class="no-ads">
                     <p>Aradığınız kriterlere uygun ilan bulunamadı veya henüz ilan paylaşılmamış.</p>
-                    <a href="{% url 'index' %}" style="color: #5d3ebc;">Tüm ilanları gör</a>
+                    <a href="{% url 'home' %}" style="color: #5d3ebc;">Tüm ilanları gör</a>
                 </div>
             {% endfor %}
         </div>

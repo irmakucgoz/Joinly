@@ -26,7 +26,7 @@ urlpatterns = [
     
     # İlan İşlemleri
     # NOT: 'name' kısmını 'index' yaptık ki HTML'deki {% url 'index' %} kodu çalışsın.
-    path('', index, name='index'), 
+    path('', index, name='home'), 
     path('yeni-ilan/', ilan_olustur, name='ilan_olustur'),
     path('ilan/<int:ilan_id>/', ilan_detay, name='ilan_detay'),
     path('ilan/<int:ilan_id>/duzenle/', ilan_duzenle, name='ilan_duzenle'),

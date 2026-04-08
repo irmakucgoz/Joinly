@@ -23,7 +23,7 @@ def ilan_olustur(request):
             ilan = form.save(commit=False)
             ilan.owner = request.user
             ilan.save()
-            return redirect('index') # Burası 'index' olmalı!
+            return redirect('home') 
     else:
         form = AdvertisementForm()
     return render(request, 'ilanlar/ilan_form.html', {'form': form})
@@ -49,5 +49,5 @@ def ilan_sil(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id, owner=request.user)
     if request.method == 'POST':
         ilan.delete()
-        return redirect('index') # Burası 'index' olmalı!
+        return redirect('home')
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
