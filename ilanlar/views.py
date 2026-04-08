@@ -2,6 +2,7 @@ from django.shortcuts import render , redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Advertisement
 from .forms import AdvertisementForm
+from django.db.models import Q
 
 def index(request):
     # Veritabanındaki tüm ilanları çekiyoruz
@@ -53,3 +54,15 @@ def ilan_sil(request, ilan_id):
         ilan.delete()
         return redirect('home')
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
+    def index(request):
+    query = request.GET.get('q') # URL'den 'q' parametresini (arama kelimesini) al
+    if query:
+        # Eğer arama yapılmışsa, başlıkta VEYA açıklamada geçenleri filtrele
+        ilanlar = Advertisement.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        ).distinct()
+    else:
+        # Arama yoksa tüm ilanları getir
+        ilanlar = Advertisement.objects.all().order_by('-created_at')
+    
+    return render(request, 'ilanlar/index.html', {'ilanlar': ilanlar, 'query': query})
