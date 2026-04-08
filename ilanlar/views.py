@@ -51,3 +51,13 @@ def ilan_sil(request, ilan_id):
         ilan.delete()
         return redirect('home')
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
+@login_required
+def profil_sayfasi(request):
+    # Giriş yapmış kullanıcının kendi ilanlarını çekiyoruz
+    kullanici_ilanlari = Advertisement.objects.filter(owner=request.user).order_by('-created_at')
+    
+    context = {
+        'ilanlar': kullanici_ilanlari,
+        'user': request.user
+    }
+    return render(request, 'profil.html', context)
