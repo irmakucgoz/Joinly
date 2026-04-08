@@ -1,4 +1,4 @@
-% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,6 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joinly | Ana Sayfa</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Arama Çubuğu Tasarımı */
+        .search-section {
+            margin-bottom: 30px;
+        }
+        .search-input-group {
+            display: flex;
+            border: 2px solid #5d3ebc;
+            border-radius: 30px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .search-input-group input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        .search-btn {
+            background: #5d3ebc;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .search-btn:hover {
+            background: #4a319a;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -24,97 +57,45 @@
     </header>
 
     <main class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h1 style="margin: 0;">Aktif İlanlar</h1>
-    
-    {% if user.is_authenticated %}
-        <a href="{% url 'ilan_olustur' %}" class="btn-primary" style="text-decoration: none; padding: 10px 25px;">
-            + İlan Ver
-        </a>
-    {% endif %}
-</div>
-    % load static %}
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joinly | Ana Sayfa</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-    <header>
-        <nav class="navbar">
-            <div class="logo">Joinly</div>
-            <div class="nav-links">
-                {% if user.is_authenticated %}
-                    <span>Hoş geldin, <strong>{{ user.username }}</strong></span>
-                    <a href="{% url 'logout' %}" class="btn-secondary">Çıkış Yap</a>
-                {% else %}
-                    <a href="{% url 'login' %}">Giriş Yap</a>
-                    <a href="{% url 'register' %}" class="btn-primary">Kayıt Ol</a>
-                {% endif %}
-            </div>
-        </nav>
-    </header>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">Aktif İlanlar</h1>
+            {% if user.is_authenticated %}
+                <a href="{% url 'ilan_olustur' %}" class="btn-primary" style="text-decoration: none; padding: 10px 25px;">
+                    + İlan Ver
+                </a>
+            {% endif %}
+        </div>
 
-    <main class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h1 style="margin: 0;">Aktif İlanlar</h1>
-    
-    {% if user.is_authenticated %}
-        <a href="{% url 'ilan_olustur' %}" class="btn-primary" style="text-decoration: none; padding: 10px 25px;">
-            + İlan Ver
-        </a>
-    {% endif %}
-</div>
+        <div class="search-section">
+            <form action="{% url 'index' %}" method="GET" class="search-form">
+                <div class="search-input-group">
+                    <input type="text" name="q" placeholder="Ders, etkinlik veya arkadaş ara..." value="{{ query|default:'' }}">
+                    <button type="submit" class="search-btn">Ara</button>
+                </div>
+            </form>
+        </div>
         
         <div class="ads-grid">
             {% for ilan in ilanlar %}
-    <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration: none; color: inherit; display: block;">
-        
-        <div class="ad-card">
-            <span class="category-tag" style="background-color: {{ ilan.category.color }}">
-                {{ ilan.category.name }}
-            </span>
-            <h3>{{ ilan.title }}</h3>
-            <p>{{ ilan.description|truncatewords:15 }}</p>
-            <div class="ad-info">
-                <span>👤 {{ ilan.owner.username }}</span>
-                <span>📅 {{ ilan.created_at|date:"d M" }}</span>
-            </div>
-        </div>
-
-    </a> {% empty %}
-    <div class="no-ads">
-        <p>Henüz ilan paylaşılmamış. İlk ilanı sen paylaşmak ister misin?</p>
-    </div>
-{% endfor %}
-        </div>
-    </main>
-</body>
-</html>
-        <div class="ads-grid">
-            {% for ilan in ilanlar %}
-    <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration: none; color: inherit; display: block;">
-        
-        <div class="ad-card">
-            <span class="category-tag" style="background-color: {{ ilan.category.color }}">
-                {{ ilan.category.name }}
-            </span>
-            <h3>{{ ilan.title }}</h3>
-            <p>{{ ilan.description|truncatewords:15 }}</p>
-            <div class="ad-info">
-                <span>👤 {{ ilan.owner.username }}</span>
-                <span>📅 {{ ilan.created_at|date:"d M" }}</span>
-            </div>
-        </div>
-
-    </a> {% empty %}
-    <div class="no-ads">
-        <p>Henüz ilan paylaşılmamış. İlk ilanı sen paylaşmak ister misin?</p>
-    </div>
-{% endfor %}
+                <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration: none; color: inherit; display: block;">
+                    <div class="ad-card">
+                        <span class="category-tag" style="background-color: {{ ilan.category.color }}">
+                            {{ ilan.category.name }}
+                        </span>
+                        <h3>{{ ilan.title }}</h3>
+                        <p>{{ ilan.description|truncatewords:15 }}</p>
+                        <div class="ad-info">
+                            <span>👤 {{ ilan.owner.username }}</span>
+                            <span>📅 {{ ilan.created_at|date:"d M" }}</span>
+                        </div>
+                    </div>
+                </a> 
+            {% empty %}
+                <div class="no-ads">
+                    <p>Aradığınız kriterlere uygun ilan bulunamadı veya henüz ilan paylaşılmamış.</p>
+                    <a href="{% url 'index' %}" style="color: #5d3ebc;">Tüm ilanları gör</a>
+                </div>
+            {% endfor %}
         </div>
     </main>
 </body>
