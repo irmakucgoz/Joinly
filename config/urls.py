@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from ilanlar.views import index, ilan_olustur, ilan_detay, ilan_duzenle, ilan_sil
+from ilanlar.views import index, ilan_olustur, ilan_detay, ilan_duzenle, ilan_sil, profil_sayfasi
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,4 +31,5 @@ urlpatterns = [
     path('ilan/<int:ilan_id>/', ilan_detay, name='ilan_detay'),
     path('ilan/<int:ilan_id>/duzenle/', ilan_duzenle, name='ilan_duzenle'),
     path('ilan/<int:ilan_id>/sil/', ilan_sil, name='ilan_sil'),
+    path('profil/', profil_sayfasi, name='profil'),
 ]
