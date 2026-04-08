@@ -47,6 +47,9 @@
             <div class="nav-links">
                 {% if user.is_authenticated %}
                     <span>Hoş geldin, <strong>{{ user.username }}</strong></span>
+                    <a href="{% url 'profil' %}" style="margin: 0 15px; text-decoration: none; color: #5d3ebc; font-weight: bold;">
+    Profilim
+</a>
                     <a href="{% url 'logout' %}" class="btn-secondary">Çıkış Yap</a>
                 {% else %}
                     <a href="{% url 'login' %}">Giriş Yap</a>
