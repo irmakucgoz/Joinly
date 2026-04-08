@@ -1,23 +1,24 @@
-{% extends 'base.html' %} {% block content %}
-<div class="container">
-    <div class="auth-card" style="max-width: 800px; margin: 0 auto;">
-        <h2 style="color: #5d3ebc;">Kullanıcı Profili</h2>
-        <div style="text-align: left; margin-bottom: 30px; padding: 20px; background: #f3f0ff; border-radius: 10px;">
+{% extends 'index.html' %} {% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <h2>Kullanıcı Profili</h2>
+        <div class="profile-info">
             <p><strong>Kullanıcı Adı:</strong> {{ user.username }}</p>
             <p><strong>E-posta:</strong> {{ user.email }}</p>
         </div>
+    </div>
 
-        <h3 style="text-align: left;">Paylaştığım İlanlar</h3>
-        <hr>
-        <div class="ads-grid">
+    <div class="profile-ads-section">
+        <h3 style="color: #333; text-align: left;">Paylaştığım İlanlar</h3>
+        <div class="profile-ads-grid">
             {% for ilan in ilanlar %}
-                <div class="ad-card">
+                <div class="profile-ad-card">
                     <h4>{{ ilan.title }}</h4>
                     <p>{{ ilan.description|truncatewords:10 }}</p>
-                    <a href="{% url 'ilan_detay' ilan.id %}" style="color: #5d3ebc;">Detaylara Git</a>
+                    <a href="{% url 'ilan_detay' ilan.id %}" class="profile-ad-link">Detaylara Git →</a>
                 </div>
             {% empty %}
-                <p>Henüz bir ilan paylaşmadınız.</p>
+                <p style="color: #999;">Henüz bir ilan paylaşmadınız.</p>
             {% endfor %}
         </div>
     </div>
