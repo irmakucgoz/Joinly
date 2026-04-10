@@ -3,8 +3,10 @@ from django.contrib.auth.decorators import login_required
 from .models import Advertisement
 from .forms import AdvertisementForm
 from django.db.models import Q
+from django.contrib.auth import authenticate, login as auth_login, logout, get_user_model
+from django.contrib import messages
 
-def index(request):
+def home(request):
     query = request.GET.get('q')
     if query:
         ilanlar = Advertisement.objects.filter(
@@ -60,4 +62,52 @@ def profil_sayfasi(request):
         'ilanlar': kullanici_ilanlari,
         'user': request.user
     }
-    return render(request, 'profil.html', context)
+    return render(request, 'users/profil.html', context)
+def login_view(request):
+    if request.method == 'POST':
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        
+        user = authenticate(username=u, password=p)
+        
+        if user is not None:
+            auth_login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, "Kullanıcı adı veya şifre hatalı!")
+            
+    return render(request, 'users/login.html')
+User = get_user_model()
+def register(request):
+    if request.method == 'POST':
+        # HTML'deki 'name' değerleriyle birebir aynı olmalı
+        kadi = request.POST.get('username')
+        ad = request.POST.get('first_name')
+        soyad = request.POST.get('last_name')
+        eposta = request.POST.get('email')
+        sifre = request.POST.get('password')
+
+        # Kullanıcı zaten var mı kontrolü
+        if User.objects.filter(username=kadi).exists():
+            messages.error(request, "Bu kullanıcı adı zaten alınmış!")
+            return render(request, 'users/register.html')
+
+        # Kullanıcıyı oluştur ve kaydet
+        user = User.objects.create_user(
+            username=kadi,
+            first_name=ad,
+            last_name=soyad,
+            email=eposta,
+            password=sifre
+        )
+        
+        auth_login(request, user)
+        messages.success(request, "Aramıza hoş geldin!")
+        return redirect('home')
+
+    return render(request, 'users/register.html')
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Başarıyla çıkış yaptınız. Yine bekleriz!")
+    return redirect('home')
+
