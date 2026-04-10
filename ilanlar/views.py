@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Advertisement
+from .models import Advertisement, Category
 from .forms import AdvertisementForm
 from django.db.models import Q
 from django.contrib.auth import authenticate, login as auth_login, logout, get_user_model
@@ -8,6 +8,7 @@ from django.contrib import messages
 
 def home(request):
     query = request.GET.get('q')
+    categories = Category.objects.all()
     if query:
         ilanlar = Advertisement.objects.filter(
             Q(title__icontains=query) | Q(description__icontains=query)
@@ -15,7 +16,7 @@ def home(request):
     else:
         ilanlar = Advertisement.objects.all().order_by('-created_at')
     
-    return render(request, 'index.html', {'ilanlar': ilanlar, 'query': query})
+    return render(request, 'index.html', {'ilanlar': ilanlar, 'query': query, 'categories': categories})
 
 @login_required
 def ilan_olustur(request):
