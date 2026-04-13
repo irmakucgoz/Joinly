@@ -56,7 +56,6 @@ def ilan_sil(request, ilan_id):
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
 @login_required
 def profil_sayfasi(request):
-    # Giriş yapmış kullanıcının kendi ilanlarını çekiyoruz
     kullanici_ilanlari = Advertisement.objects.filter(owner=request.user).order_by('-created_at')
     
     context = {
@@ -81,19 +80,17 @@ def login_view(request):
 User = get_user_model()
 def register(request):
     if request.method == 'POST':
-        # HTML'deki 'name' değerleriyle birebir aynı olmalı
         kadi = request.POST.get('username')
         ad = request.POST.get('first_name')
         soyad = request.POST.get('last_name')
         eposta = request.POST.get('email')
         sifre = request.POST.get('password')
-
-        # Kullanıcı zaten var mı kontrolü
+        
         if User.objects.filter(username=kadi).exists():
             messages.error(request, "Bu kullanıcı adı zaten alınmış!")
             return render(request, 'users/register.html')
 
-        # Kullanıcıyı oluştur ve kaydet
+        
         user = User.objects.create_user(
             username=kadi,
             first_name=ad,
