@@ -2,9 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Max
-from .models import Advertisement, Category, Message
+from .models import Advertisement, Category, Message, Review  # Review eklendi
 from .forms import AdvertisementForm
-
 
 def home(request):
     query      = request.GET.get('q', '').strip()
@@ -29,11 +28,9 @@ def home(request):
     }
     return render(request, 'index.html', context)
 
-
 def ilan_detay(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id)
     return render(request, 'ilanlar/ilan_detay.html', {'ilan': ilan})
-
 
 @login_required
 def ilan_olustur(request):
@@ -49,7 +46,6 @@ def ilan_olustur(request):
         form = AdvertisementForm()
     return render(request, 'ilanlar/ilan_form.html', {'form': form, 'baslik': 'Yeni İlan Oluştur'})
 
-
 @login_required
 def ilan_duzenle(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id, owner=request.user)
@@ -63,7 +59,6 @@ def ilan_duzenle(request, ilan_id):
         form = AdvertisementForm(instance=ilan)
     return render(request, 'ilanlar/ilan_form.html', {'form': form, 'baslik': 'İlanı Düzenle'})
 
-
 @login_required
 def ilan_sil(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id, owner=request.user)
@@ -73,21 +68,14 @@ def ilan_sil(request, ilan_id):
         return redirect('home')
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
 
-
 # ─────────────────────────────────────────
 # MESAJLAŞMA VIEW'LARI
 # ─────────────────────────────────────────
 
 @login_required
 def mesaj_gonder(request, ilan_id):
-    """
-    Bir ilana tıklayıp 'Mesaj Gönder' diyen kullanıcı buraya gelir.
-    İlan sahibine mesaj gönderir.
-    Kendi ilanına mesaj gönderemez.
-    """
     ilan = get_object_or_404(Advertisement, id=ilan_id)
 
-    
     if ilan.owner == request.user:
         messages.error(request, 'Kendi ilanına mesaj gönderemezsin.')
         return redirect('ilan_detay', ilan_id=ilan_id)
@@ -106,30 +94,19 @@ def mesaj_gonder(request, ilan_id):
             content=icerik,
         )
         messages.success(request, f'{ilan.owner.first_name} adlı kullanıcıya mesajın gönderildi!')
-        
         return redirect('konusma_detay', diger_kullanici_id=ilan.owner.id, ilan_id=ilan.id)
 
-    
     return redirect('ilan_detay', ilan_id=ilan_id)
-
 
 @login_required
 def gelen_kutusu(request):
-    """
-    Kullanıcının tüm konuşmalarını listeler.
-    Her konuşma: (diğer kullanıcı + ilan) çifti olarak gruplanır.
-    En son mesaj öne çıkar.
-    """
-    
     tum_mesajlar = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     ).select_related('sender', 'receiver', 'ad').order_by('-sent_at')
 
-    
     konusmalar = {}
     for mesaj in tum_mesajlar:
-        
-        diger = mesaj.receiver if mesaj.sender == request.user else mesaj.sender
+        diger  = mesaj.receiver if mesaj.sender == request.user else mesaj.sender
         anahtar = (diger.id, mesaj.ad.id)
 
         if anahtar not in konusmalar:
@@ -137,7 +114,6 @@ def gelen_kutusu(request):
                 'diger_kullanici': diger,
                 'ilan'           : mesaj.ad,
                 'son_mesaj'      : mesaj,
-                # Okunmamış mesaj var mı? (bana gelen, henüz görülmemiş)
                 'okunmamis'      : Message.objects.filter(
                     sender=diger,
                     receiver=request.user,
@@ -151,18 +127,35 @@ def gelen_kutusu(request):
     }
     return render(request, 'ilanlar/gelen_kutusu.html', context)
 
-
 @login_required
 def konusma_detay(request, diger_kullanici_id, ilan_id):
+    """
+    HATA DÜZELTMESİ:
+    Eski kodda yetkisiz erişimde messages.error() ile redirect('gelen_kutusu')
+    yapılıyordu. Bu mesaj gelen kutusu → login sayfasına taşınarak
+    login.html'de hatalı gösteriliyordu.
+
+    Düzeltme: Yetkisiz durumda messages kullanmadan doğrudan
+    HttpResponseForbidden ile yanıt veriyoruz. Böylece mesaj kuyruğu
+    kirlenmez.
+    """
+    from django.http import HttpResponseForbidden
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
     diger_kullanici = get_object_or_404(User, id=diger_kullanici_id)
-    ilan = get_object_or_404(Advertisement, id=ilan_id)
+    ilan            = get_object_or_404(Advertisement, id=ilan_id)
 
-    if request.user != ilan.owner and request.user != diger_kullanici:
-        messages.error(request, 'Bu konuşmaya erişim yetkin yok.')
-        return redirect('gelen_kutusu')
+    # Yetki kontrolü — mesaj kuyruğunu kirletmeden doğrudan 403
+    yetkili = (
+        request.user == ilan.owner or
+        request.user == diger_kullanici
+    )
+    if not yetkili:
+        return HttpResponseForbidden(
+            '<h2>Bu konuşmaya erişim yetkin yok.</h2>'
+            '<p><a href="/">Ana Sayfaya Dön</a></p>'
+        )
 
     konusma_mesajlari = Message.objects.filter(
         ad=ilan,
@@ -171,6 +164,7 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
         Q(sender=diger_kullanici, receiver=request.user)
     ).order_by('sent_at')
 
+    # Okundu olarak işaretle
     konusma_mesajlari.filter(
         receiver=request.user,
         is_read=False,
@@ -188,8 +182,36 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
         return redirect('konusma_detay', diger_kullanici_id=diger_kullanici_id, ilan_id=ilan_id)
 
     context = {
-        'diger_kullanici': diger_kullanici,
-        'ilan': ilan,
+        'diger_kullanici'  : diger_kullanici,
+        'ilan'             : ilan,
         'konusma_mesajlari': konusma_mesajlari,
     }
     return render(request, 'ilanlar/konusma_detay.html', context)
+
+# ─────────────────────────────────────────
+# YENİ: PUANLAMA SİSTEMİ VIEW'I
+# ─────────────────────────────────────────
+
+@login_required
+def kullanici_puanla(request, hedef_kullanici_id):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    target_user = get_object_or_404(User, id=hedef_kullanici_id)
+
+    if request.method == 'POST':
+        puan = request.POST.get('rating')
+        yorum = request.POST.get('comment', '').strip()
+
+        if request.user == target_user:
+            messages.error(request, 'Kendine puan veremezsin!')
+            return redirect('home')
+
+        if puan:
+            Review.objects.update_or_create(
+                reviewer=request.user,
+                target_user=target_user,
+                defaults={'rating': puan, 'comment': yorum}
+            )
+            messages.success(request, f'{target_user.username} adlı kullanıcıya puanın iletildi!')
+        
+    return redirect('home')

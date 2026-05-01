@@ -15,4 +15,7 @@ urlpatterns = [
     path('mesajlar/', views.gelen_kutusu, name='gelen_kutusu'),
     
     path('mesajlar/<int:diger_kullanici_id>/<int:ilan_id>/', views.konusma_detay, name='konusma_detay'),
+
+    # YENİ: PUANLAMA SİSTEMİ
+    path('puanla/<int:hedef_kullanici_id>/', views.kullanici_puanla, name='kullanici_puanla'),
 ]
