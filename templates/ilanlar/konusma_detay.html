@@ -5,73 +5,6 @@
     <meta charset="UTF-8">
     <title>{{ diger_kullanici.first_name }} ile Konuşma — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        /* Puanlama Alanı İçin Özel Stiller */
-        .puanlama-alani {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 20px 0;
-        }
-        .puanlama-baslik {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #5d3ebc;
-            margin-bottom: 10px;
-            display: block;
-        }
-        .puanlama-formu {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .puanlama-formu select,
-        .puanlama-formu input[type="text"] {
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-        .puanlama-formu input[type="text"] {
-            flex: 1;
-            min-width: 160px;
-        }
-        .btn-puanla {
-            background-color: #5d3ebc;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        .btn-puanla:hover { background-color: #4a319a; }
-
-        .guven-rozeti-kucuk {
-            font-size: 0.85rem;
-            color: #ffc107;
-            background: #fff9e6;
-            padding: 2px 8px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-
-        /* Mesaj baloncukları */
-        .benim  { text-align: right; }
-        .karsi  { text-align: left; }
-        .balon-icerik {
-            display: inline-block;
-            padding: 8px 14px;
-            border-radius: 18px;
-            max-width: 70%;
-            word-break: break-word;
-        }
-        .benim  .balon-icerik { background: #5d3ebc; color: white; }
-        .karsi  .balon-icerik { background: #f0f0f0; color: #333; }
-        .balon-zaman { font-size: 0.7rem; color: #999; margin-top: 3px; }
-    </style>
 </head>
 <body>
 
@@ -84,7 +17,9 @@
 {% if messages %}
     <div style="padding: 10px 20px;">
         {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" style="padding: 10px; border-radius: 6px; margin-bottom: 8px; background: {% if 'error' in message.tags %}#ffe0e0{% else %}#e0ffe0{% endif %};">
+            <div style="padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;
+                        background: {% if 'error' in message.tags %}#ffe0e0{% else %}#e8f5e9{% endif %};
+                        color: {% if 'error' in message.tags %}#c62828{% else %}#2e7d32{% endif %};">
                 {{ message }}
             </div>
         {% endfor %}
@@ -98,10 +33,11 @@
         <div class="avatar buyuk">{{ diger_kullanici.first_name|first }}</div>
         <div>
             <h2>
-                <a href="{% url 'kullanici_profil' diger_kullanici.id %}" style="text-decoration: none; color: inherit;">
+                <!-- İsme tıklayınca profiline git -->
+                <a href="{% url 'kullanici_profil' diger_kullanici.id %}"
+                   style="text-decoration: none; color: inherit;">
                     {{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}
                 </a>
-                <!-- İsim yanına küçük puan rozeti -->
                 <span class="guven-rozeti-kucuk">⭐ {{ diger_kullanici.average_rating|default:"0" }}</span>
             </h2>
             <p class="konusma-ilan-adi">
@@ -113,7 +49,7 @@
     <!-- Mesaj baloncukları -->
     <div class="mesaj-baloncuklari" id="mesajlar">
         {% for mesaj in konusma_mesajlari %}
-            {# request.user ile karşılaştırma — Django template'de 'user' request.user'a eşittir #}
+            {# Django template'de 'user' = request.user (context_processor) #}
             <div class="balon {% if mesaj.sender == user %}benim{% else %}karsi{% endif %}">
                 <div class="balon-icerik">{{ mesaj.content }}</div>
                 <div class="balon-zaman">{{ mesaj.sent_at|date:"d M, H:i" }}</div>
@@ -123,12 +59,12 @@
         {% endfor %}
     </div>
 
-    <!-- PUANLAMA FORMU (Mesaj kutusunun hemen üstünde) -->
+    <!-- PUANLAMA FORMU -->
     <div class="puanlama-alani">
         <span class="puanlama-baslik">🌟 Bu kişiyle deneyimin nasıldı? Puanla:</span>
         <form action="{% url 'kullanici_puanla' diger_kullanici.id %}" method="post" class="puanlama-formu">
             {% csrf_token %}
-            {# Puanlama sonrası bu konuşma sayfasına geri dön #}
+            <!-- Puanlama sonrası bu konuşma sayfasına geri dön -->
             <input type="hidden" name="next" value="{{ request.get_full_path }}">
             <select name="rating" required>
                 <option value="5">⭐⭐⭐⭐⭐ — Harika</option>
@@ -137,7 +73,7 @@
                 <option value="2">⭐⭐ — Kötü</option>
                 <option value="1">⭐ — Çok Kötü</option>
             </select>
-            <input type="text" name="comment" placeholder="Kısa bir yorum bırak (isteğe bağlı)...">
+            <input type="text" name="comment" placeholder="Kısa bir yorum (isteğe bağlı)...">
             <button type="submit" class="btn-puanla">Puanla</button>
         </form>
     </div>
@@ -162,7 +98,6 @@
 
 </div>
 
-<!-- Sayfayı en alta kaydır -->
 <script>
     const mesajlar = document.getElementById('mesajlar');
     mesajlar.scrollTop = mesajlar.scrollHeight;

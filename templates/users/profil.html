@@ -7,7 +7,7 @@
             {% if profile_user == user %}
                 Profilim
             {% else %}
-                {{ profile_user.first_name }} {{ profile_user.last_name }} Profili
+                {{ profile_user.first_name }} {{ profile_user.last_name }}
             {% endif %}
         </h2>
         <div class="profile-info">
@@ -28,31 +28,47 @@
             </div>
         </div>
 
-        <!-- PUANLAMA FORMU: Sadece başkasının profili görüntüleniyorsa göster -->
+        <!-- PUANLAMA FORMU: sadece başkasının profili ve giriş yapılmışsa -->
         {% if user.is_authenticated and profile_user != user %}
             <div style="margin-top: 20px; padding: 15px; background: #f8f4ff; border-radius: 10px; border-left: 4px solid #5d3ebc;">
-                <strong style="color: #5d3ebc;">🌟 Bu kullanıcıyı puanla:</strong>
-                <form action="{% url 'kullanici_puanla' profile_user.id %}" method="post" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <strong style="color: #5d3ebc; display: block; margin-bottom: 10px;">🌟 Bu kullanıcıyı puanla:</strong>
+                <form action="{% url 'kullanici_puanla' profile_user.id %}" method="post"
+                      style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                     {% csrf_token %}
-                    <!-- Puanlama sonrası bu sayfaya geri dön -->
                     <input type="hidden" name="next" value="{{ request.path }}">
-                    <select name="rating" required style="padding: 7px 10px; border-radius: 6px; border: 1px solid #ddd;">
+                    <select name="rating" required
+                            style="padding: 7px 10px; border-radius: 6px; border: 1px solid #ddd;">
                         <option value="5">⭐⭐⭐⭐⭐ — Harika</option>
                         <option value="4">⭐⭐⭐⭐ — İyi</option>
                         <option value="3">⭐⭐⭐ — Orta</option>
                         <option value="2">⭐⭐ — Kötü</option>
                         <option value="1">⭐ — Çok Kötü</option>
                     </select>
-                    <input type="text" name="comment" placeholder="Kısa bir yorum (isteğe bağlı)..." style="flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid #ddd; min-width: 180px;">
-                    <button type="submit" style="background: #5d3ebc; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    <input type="text" name="comment" placeholder="Kısa bir yorum (isteğe bağlı)..."
+                           style="flex: 1; min-width: 180px; padding: 7px 10px; border-radius: 6px; border: 1px solid #ddd;">
+                    <button type="submit"
+                            style="background: #5d3ebc; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer;">
                         Puanla
                     </button>
                 </form>
             </div>
         {% endif %}
+
+        <!-- Flash mesajları (puanlama bildirimi vb.) -->
+        {% if messages %}
+            <div style="margin-top: 15px;">
+                {% for message in messages %}
+                    <div style="padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;
+                                background: {% if 'error' in message.tags %}#ffe0e0{% else %}#e8f5e9{% endif %};
+                                color: {% if 'error' in message.tags %}#c62828{% else %}#2e7d32{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
 
-    <!-- PAYLAŞILAN İLANLAR BÖLÜMÜ -->
+    <!-- PAYLAŞILAN İLANLAR -->
     <div class="profile-ads-section">
         <h3 style="color: #333; text-align: left; margin-top: 30px;">
             {% if profile_user == user %}Paylaştığım İlanlar{% else %}Paylaşılan İlanlar{% endif %}
@@ -70,30 +86,26 @@
         </div>
     </div>
 
-    <!-- KULLANICI YORUMLARI BÖLÜMÜ -->
+    <!-- KULLANICI YORUMLARI -->
     <div class="reviews-section" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
         <h3 style="color: #333; margin-bottom: 20px;">💬 Kullanıcı Geri Bildirimleri</h3>
-
         <div class="reviews-list">
             {% for review in profile_user.reviews_received.all %}
-                <div class="review-card" style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid #5d3ebc;">
-                    <div class="review-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div class="review-card">
+                    <div class="review-header">
                         <strong style="color: #5d3ebc;">{{ review.reviewer.username }}</strong>
-                        <span class="review-rating" style="color: #ffc107; font-weight: bold;">
+                        <span class="review-rating">
                             {% if review.rating == 5 %}⭐⭐⭐⭐⭐
                             {% elif review.rating == 4 %}⭐⭐⭐⭐
                             {% elif review.rating == 3 %}⭐⭐⭐
                             {% elif review.rating == 2 %}⭐⭐
-                            {% else %}⭐
-                            {% endif %}
+                            {% else %}⭐{% endif %}
                         </span>
                     </div>
                     {% if review.comment %}
-                        <p class="review-comment" style="margin: 0; color: #444; font-style: italic;">"{{ review.comment }}"</p>
+                        <p class="review-comment">"{{ review.comment }}"</p>
                     {% endif %}
-                    <small class="review-date" style="color: #999; display: block; margin-top: 8px; font-size: 0.75rem;">
-                        {{ review.created_at|date:"d F Y" }}
-                    </small>
+                    <small class="review-date">{{ review.created_at|date:"d F Y" }}</small>
                 </div>
             {% empty %}
                 <p style="color: #999;">Bu kullanıcı hakkında henüz bir değerlendirme yapılmamış.</p>
