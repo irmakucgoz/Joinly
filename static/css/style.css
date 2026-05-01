@@ -785,3 +785,109 @@ nav a:hover { color: var(--primary); }
     color: white;
     box-shadow: 0 4px 12px rgba(255, 94, 94, 0.3);
 }
+/* --- GÜVEN SKORU VE PUANLAMA SİSTEMİ --- */
+
+/* 1. Profil ve Chat'teki Rozetler */
+.trust-score-badge, .guven-rozeti-kucuk {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f3f0ff; /* Joinly açık mor arka plan */
+    color: #5d3ebc; /* Joinly koyu mor yazı */
+    padding: 6px 14px;
+    border-radius: 25px;
+    font-weight: 700;
+    border: 1px solid rgba(93, 62, 188, 0.2);
+    box-shadow: 0 2px 4px rgba(93, 62, 188, 0.05);
+}
+
+.star-icon {
+    color: #ffc107; /* Altın sarısı yıldız */
+    margin-right: 6px;
+    font-size: 1.1rem;
+}
+
+/* 2. Profil Sayfasındaki Yorum Kartları */
+.review-card {
+    background: #ffffff;
+    border-left: 5px solid #5d3ebc;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-3px); /* Üzerine gelince hafif yükselme efekti */
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.review-rating {
+    letter-spacing: 2px; /* Yıldızların arasını biraz açalım */
+}
+
+.review-comment {
+    font-style: italic;
+    color: #555;
+    line-height: 1.5;
+}
+
+.review-date {
+    display: block;
+    margin-top: 12px;
+    color: #aaa;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+/* 3. Konuşma Detayındaki Puanlama Kutusu */
+.puanlama-alani {
+    background: #ffffff;
+    border: 2px dashed #5d3ebc33; /* Dikkat çekmesi için kesikli çizgi */
+    padding: 20px;
+    border-radius: 15px;
+    margin: 25px 0;
+}
+
+.puanlama-baslik {
+    color: #333;
+    font-weight: 800;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.puanlama-formu select, 
+.puanlama-formu input[type="text"] {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.puanlama-formu select:focus, 
+.puanlama-formu input[type="text"]:focus {
+    border-color: #5d3ebc;
+}
+
+.btn-puanla {
+    background: #5d3ebc;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-puanla:hover {
+    background: #4a319a;
+    box-shadow: 0 4px 10px rgba(74, 49, 154, 0.3);
+}

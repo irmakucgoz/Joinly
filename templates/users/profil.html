@@ -7,9 +7,21 @@
         <div class="profile-info">
             <p><strong>Kullanıcı Adı:</strong> {{ user.username }}</p>
             <p><strong>E-posta:</strong> {{ user.email }}</p>
+            
+            <!-- YENİ: GÜVEN SKORU ROZETİ -->
+            <div class="trust-score-badge" style="margin-top: 15px;">
+                <span class="star-icon">⭐</span>
+                <span class="rating-value" style="font-size: 1.2rem; font-weight: bold; color: #5d3ebc;">
+                    {{ user.average_rating|default:"0" }} / 5
+                </span>
+                <span class="rating-count" style="color: #777; font-size: 0.85rem; margin-left: 5px;">
+                    ({{ user.reviews_received.count }} değerlendirme)
+                </span>
+            </div>
         </div>
     </div>
 
+    <!-- PAYLAŞILAN İLANLAR BÖLÜMÜ (Mevcut yapı korundu) -->
     <div class="profile-ads-section">
         <h3 style="color: #333; text-align: left; margin-top: 30px;">Paylaştığım İlanlar</h3>
         <div class="profile-ads-grid">
@@ -21,6 +33,30 @@
                 </div>
             {% empty %}
                 <p style="color: #999; margin-top: 15px;">Henüz bir ilan paylaşmadınız.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- YENİ: KULLANICI YORUMLARI BÖLÜMÜ -->
+    <div class="reviews-section" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+        <h3 style="color: #333; margin-bottom: 20px;">💬 Kullanıcı Geri Bildirimleri</h3>
+        
+        <div class="reviews-list">
+            {% for review in user.reviews_received.all %}
+                <div class="review-card" style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 15px; border-left: 5px solid #5d3ebc;">
+                    <div class="review-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <strong style="color: #5d3ebc;">{{ review.reviewer.username }}</strong>
+                        <span class="review-rating" style="color: #ffc107; font-weight: bold;">
+                            {% if review.rating == 5 %}⭐⭐⭐⭐⭐{% elif review.rating == 4 %}⭐⭐⭐⭐{% elif review.rating == 3 %}⭐⭐⭐{% elif review.rating == 2 %}⭐⭐{% else %}⭐{% endif %}
+                        </span>
+                    </div>
+                    <p class="review-comment" style="margin: 0; color: #444; font-style: italic;">"{{ review.comment }}"</p>
+                    <small class="review-date" style="color: #999; display: block; margin-top: 8px; font-size: 0.75rem;">
+                        {{ review.created_at|date:"d F Y" }}
+                    </small>
+                </div>
+            {% empty %}
+                <p style="color: #999;">Bu kullanıcı hakkında henüz bir değerlendirme yapılmamış.</p>
             {% endfor %}
         </div>
     </div>

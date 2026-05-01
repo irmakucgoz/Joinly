@@ -5,6 +5,53 @@
     <meta charset="UTF-8">
     <title>{{ diger_kullanici.first_name }} ile Konuşma — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* Puanlama Alanı İçin Özel Stiller */
+        .puanlama-alani {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .puanlama-baslik {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #5d3ebc;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .puanlama-formu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .puan-secimi select, .puan-yorum input {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .btn-puanla {
+            background-color: #5d3ebc;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn-puanla:hover { background-color: #4a319a; }
+        
+        .guven-rozeti-kucuk {
+            font-size: 0.85rem;
+            color: #ffc107;
+            background: #fff9e6;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+    </style>
 </head>
 <body>
 
@@ -20,7 +67,11 @@
     <div class="konusma-header">
         <div class="avatar buyuk">{{ diger_kullanici.first_name|first }}</div>
         <div>
-            <h2>{{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}</h2>
+            <h2>
+                {{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}
+                <!-- YENİ: İsim yanına küçük puan rozeti -->
+                <span class="guven-rozeti-kucuk">⭐ {{ diger_kullanici.average_rating|default:"0" }}</span>
+            </h2>
             <p class="konusma-ilan-adi">
                 İlan: <a href="{% url 'ilan_detay' ilan.id %}">{{ ilan.title }}</a>
             </p>
@@ -37,6 +88,25 @@
         {% empty %}
             <p class="bos-konusma">Henüz mesaj yok. İlk mesajı sen gönder!</p>
         {% endfor %}
+    </div>
+
+    <!-- YENİ: PUANLAMA FORMU (Mesaj kutusunun hemen üstünde) -->
+    <div class="puanlama-alani">
+        <span class="puanlama-baslik">🌟 Bu kişiyle deneyimin nasıldı? Puanla:</span>
+        <form action="{% url 'kullanici_puanla' diger_kullanici.id %}" method="post" class="puanlama-formu">
+            {% csrf_token %}
+            <div style="display: flex; gap: 10px;">
+                <select name="rating" required>
+                    <option value="5">5 - Harika</option>
+                    <option value="4">4 - İyi</option>
+                    <option value="3">3 - Orta</option>
+                    <option value="2">2 - Kötü</option>
+                    <option value="1">1 - Çok Kötü</option>
+                </select>
+                <input type="text" name="comment" placeholder="Kısa bir yorum bırak (isteğe bağlı)..." style="flex: 1;">
+                <button type="submit" class="btn-puanla">Puanla</button>
+            </div>
+        </form>
     </div>
 
     <!-- Yeni mesaj gönderme formu -->
@@ -59,12 +129,11 @@
 
 </div>
 
-<!-- Sayfayı en alta kaydır (son mesaj görünsün) -->
+<!-- Sayfayı en alta kaydır -->
 <script>
     const mesajlar = document.getElementById('mesajlar');
     mesajlar.scrollTop = mesajlar.scrollHeight;
 
-    // Enter tuşuyla gönder (Shift+Enter yeni satır)
     document.getElementById('icerik').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
