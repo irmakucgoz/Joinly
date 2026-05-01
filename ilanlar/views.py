@@ -100,6 +100,7 @@ def mesaj_gonder(request, ilan_id):
             content=icerik,
         )
         messages.success(request, f'{ilan.owner.first_name} adlı kullanıcıya mesajın gönderildi!')
+        # diger_kullanici_id = ilan sahibinin id'si (URL parametresi bu şekilde tanımlandı)
         return redirect('konusma_detay', diger_kullanici_id=ilan.owner.id, ilan_id=ilan.id)
 
     return redirect('ilan_detay', ilan_id=ilan_id)
@@ -138,14 +139,22 @@ def gelen_kutusu(request):
 @login_required
 def konusma_detay(request, diger_kullanici_id, ilan_id):
     """
-    HATA DÜZELTMESİ:
-    Eski kodda yetkisiz erişimde messages.error() ile redirect('gelen_kutusu')
-    yapılıyordu. Bu mesaj gelen kutusu → login sayfasına taşınarak
-    login.html'de hatalı gösteriliyordu.
+    YETKİ MANTIĞI DÜZELTMESİ
+    ─────────────────────────
+    Eski hatalı mantık:
+        request.user == ilan.owner  VEYA  request.user == diger_kullanici
 
-    Düzeltme: Yetkisiz durumda messages kullanmadan doğrudan
-    HttpResponseForbidden ile yanıt veriyoruz. Böylece mesaj kuyruğu
-    kirlenmez.
+    Bu mantık neden yanlıştı:
+        Mesajı gönderen kişi (A) ilan sahibine (B) mesaj attığında,
+        URL'e konusma_detay?diger_kullanici_id=B.id gidiliyor.
+        Yetki kontrolünde:
+            A == B (ilan.owner)?   → HAYIR
+            A == B (diger)?        → HAYIR (A != B)
+        Sonuç: 403 hatası — halbuki A konuşmanın tarafı!
+
+    Doğru mantık:
+        URL'deki iki kişi (ilan.owner ve diger_kullanici) konuşmanın
+        taraflarıdır. request.user bu ikisinden biri olmalıdır.
     """
     from django.http import HttpResponseForbidden
     from django.contrib.auth import get_user_model
@@ -154,22 +163,20 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
     diger_kullanici = get_object_or_404(User, id=diger_kullanici_id)
     ilan            = get_object_or_404(Advertisement, id=ilan_id)
 
-    # Yetki kontrolü — mesaj kuyruğunu kirletmeden doğrudan 403
-    yetkili = (
-        request.user == ilan.owner or
-        request.user == diger_kullanici
-    )
-    if not yetkili:
+    # Konuşmanın iki tarafı: ilan sahibi ve diger_kullanici
+    konusma_taraflari = {ilan.owner.id, diger_kullanici.id}
+    if request.user.id not in konusma_taraflari:
         return HttpResponseForbidden(
             '<h2>Bu konuşmaya erişim yetkin yok.</h2>'
             '<p><a href="/">Ana Sayfaya Dön</a></p>'
         )
 
+    # Mesajları her zaman iki taraf arasında filtrele (owner <-> diger)
     konusma_mesajlari = Message.objects.filter(
         ad=ilan,
     ).filter(
-        Q(sender=request.user, receiver=diger_kullanici) |
-        Q(sender=diger_kullanici, receiver=request.user)
+        Q(sender=ilan.owner, receiver=diger_kullanici) |
+        Q(sender=diger_kullanici, receiver=ilan.owner)
     ).order_by('sent_at')
 
     # Okundu olarak işaretle
@@ -181,9 +188,11 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
     if request.method == 'POST':
         icerik = request.POST.get('icerik', '').strip()
         if icerik:
+            # Ben kim değilsem o alıcıdır
+            alici = diger_kullanici if request.user == ilan.owner else ilan.owner
             Message.objects.create(
                 sender=request.user,
-                receiver=diger_kullanici,
+                receiver=alici,
                 ad=ilan,
                 content=icerik,
             )
@@ -204,23 +213,16 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
 @login_required
 def kullanici_puanla(request, hedef_kullanici_id):
     """
-    Bir kullanıcıya puan ve yorum bırakır.
-
-    DÜZELTMELER:
-    1. Kendine puan verme engeli POST öncesinde de kontrol ediliyor.
-    2. `next` parametresi destekleniyor: form action'ına ?next=... eklenirse
-       işlem sonrasında o URL'e yönlendirilir (örn: konuşma sayfasına dönüş).
-    3. Redirect hedefi artık kullanıcının profil sayfası — daha anlamlı UX.
+    next parametresi ile gelinen sayfaya geri döner.
+    Hem konuşma sayfasından hem profil sayfasından çalışır.
     """
     from django.contrib.auth import get_user_model
     User        = get_user_model()
     target_user = get_object_or_404(User, id=hedef_kullanici_id)
 
-    # GET ile gelen ?next= parametresini al (POST'tan önce form işlenmeden)
     next_url = request.POST.get('next') or request.GET.get('next', '')
 
     if request.method == 'POST':
-        # Kendine puan verme engeli
         if request.user == target_user:
             messages.error(request, 'Kendine puan veremezsin!')
             if next_url:
@@ -236,7 +238,6 @@ def kullanici_puanla(request, hedef_kullanici_id):
                 return redirect(next_url)
             return redirect('kullanici_profil', kullanici_id=target_user.id)
 
-        # Daha önce puan verdiyse güncelle, vermediyse oluştur
         Review.objects.update_or_create(
             reviewer=request.user,
             target_user=target_user,
@@ -244,7 +245,6 @@ def kullanici_puanla(request, hedef_kullanici_id):
         )
         messages.success(request, f'{target_user.username} adlı kullanıcıya puanın iletildi!')
 
-    # next_url varsa oraya, yoksa hedef kullanıcının profil sayfasına dön
     if next_url:
         return redirect(next_url)
     return redirect('kullanici_profil', kullanici_id=target_user.id)
