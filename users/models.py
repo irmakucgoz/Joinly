@@ -13,9 +13,9 @@ class CustomUser(AbstractUser):
     @property
     def average_rating(self):
         """
-        Kullanıcının aldığı tüm puanların aritmetik ortalamasını hesaplar.
-        'reviews_received' related_name'i ilanlar/models.py Review modelinden gelir.
-        Veritabanı seviyesinde aggregate kullanılarak tek sorguda hesaplanır.
+        Kullanıcının aldığı tüm puanların ortalaması.
+        reviews_received → ilanlar/models.py Review.target_user related_name'inden gelir.
+        Veritabanı seviyesinde Avg() ile tek sorguda hesaplanır.
         """
         from django.db.models import Avg
         result = self.reviews_received.aggregate(ort=Avg('rating'))
