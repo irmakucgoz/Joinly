@@ -12,32 +12,54 @@
         .search-input-group input { flex: 1; padding: 12px 20px; border: none; outline: none; font-size: 16px; }
         .search-btn { background: #5d3ebc; color: white; border: none; padding: 0 25px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .search-btn:hover { background: #4a319a; }
+        
+        /* 4. Adımdaki CSS'i buraya veya style.css'e eklemeyi unutma */
+        .notification-badge {
+            background-color: #ff4d4d;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            box-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
+        }
     </style>
 </head>
 <body>
     <header>
         <nav class="navbar">
-    <a href="{% url 'home' %}" style="text-decoration: none;">
-        <div class="logo">Joinly</div>
-    </a>
-    
-    <div class="nav-links">
-        <a href="{% url 'home' %}" style="margin-right: 15px; text-decoration: none; color: #555; font-weight: 500;">Ana Sayfa</a>
-
-        {% if user.is_authenticated %}
-            <span>Hoş geldin, <strong>{{ user.username }}</strong></span>
-            
-            <a href="{% url 'profil' %}" style="margin: 0 15px; text-decoration: none; color: #5d3ebc; font-weight: bold;">
-                Profilim
+            <a href="{% url 'home' %}" style="text-decoration: none;">
+                <div class="logo">Joinly</div>
             </a>
             
-            <a href="{% url 'logout' %}" class="btn-secondary">Çıkış Yap</a>
-        {% else %}
-            <a href="{% url 'login' %}">Giriş Yap</a>
-            <a href="{% url 'register' %}" class="btn-primary">Kayıt Ol</a>
-        {% endif %}
-    </div>
-</nav>
+            <div class="nav-links">
+                <!-- 'Ana Sayfa' linki logo zaten oraya gittiği için kaldırıldı -->
+
+                {% if user.is_authenticated %}
+                    <span style="margin-right: 15px;">Hoş geldin, <strong>{{ user.username }}</strong></span>
+                    
+                    <!-- Yeni Mesajlar Sekmesi -->
+                    <a href="{% url 'gelen_kutusu' %}" style="margin-right: 15px; text-decoration: none; color: #555; font-weight: 500; position: relative;">
+                        📬 Mesajlar
+                        {% if unread_count > 0 %}
+                            <span class="notification-badge">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+
+                    <a href="{% url 'profil' %}" style="margin-right: 15px; text-decoration: none; color: #5d3ebc; font-weight: bold;">
+                        Profilim
+                    </a>
+                    
+                    <a href="{% url 'logout' %}" class="btn-logout">Çıkış Yap</a>
+                {% else %}
+                    <a href="{% url 'login' %}" style="margin-right: 15px; text-decoration: none;">Giriş Yap</a>
+                    <a href="{% url 'register' %}" class="btn-primary">Kayıt Ol</a>
+                {% endif %}
+            </div>
+        </nav>
     </header>
 
     <main class="container">
