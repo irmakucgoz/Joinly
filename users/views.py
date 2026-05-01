@@ -52,7 +52,12 @@ def register_view(request):
 
 
 def login_view(request):
-    
+    # --- TEMİZLİK: Eski mesajları (çıkış yaptınız, hoş geldiniz vb.) siliyoruz ---
+    storage = messages.get_messages(request)
+    for _ in storage:
+        pass # Mesajları okundu sayıp kuyruğu boşaltır
+    # --------------------------------------------------------------------------
+
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -64,12 +69,9 @@ def login_view(request):
             messages.error(request, 'Lütfen tüm alanları doldurun.')
             return render(request, 'users/login.html')
 
-        
-        
-        
-        
         try:
             user_obj = CustomUser.objects.get(username=username)
+            # Senin sisteminde email ile doğrulama yapılıyor
             user = authenticate(request, username=user_obj.email, password=password)
         except CustomUser.DoesNotExist:
             user = None

@@ -44,6 +44,8 @@
             margin-top: 10px;
         }
         .auth-footer { text-align: center; margin-top: 20px; font-size: 0.9rem; }
+        /* Mesajlar için küçük bir güzelleştirme */
+        .error-msg { color: #d93025; text-align: center; font-weight: 500; margin-bottom: 15px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -53,7 +55,10 @@
             
             {% if messages %}
                 {% for message in messages %}
-                    <p style="color: red; text-align: center;">{{ message }}</p>
+                    {# Sadece 'error' etiketli mesajları göstererek kalabalığı temizliyoruz #}
+                    {% if message.tags == 'error' %}
+                        <p class="error-msg">{{ message }}</p>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
 

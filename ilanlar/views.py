@@ -154,28 +154,16 @@ def gelen_kutusu(request):
 
 @login_required
 def konusma_detay(request, diger_kullanici_id, ilan_id):
-    """
-    İki kullanıcı arasındaki, belirli bir ilana ait konuşmanın tüm mesajlarını gösterir.
-    Yeni mesaj göndermek için POST kabul eder.
-    Sayfaya girince okunmamış mesajları 'okundu' olarak işaretler.
-    """
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
     diger_kullanici = get_object_or_404(User, id=diger_kullanici_id)
-    ilan            = get_object_or_404(Advertisement, id=ilan_id)
+    ilan = get_object_or_404(Advertisement, id=ilan_id)
 
-    
-    
-    yetkili = (
-        request.user == ilan.owner or
-        request.user == diger_kullanici
-    )
-    if not yetkili:
+    if request.user != ilan.owner and request.user != diger_kullanici:
         messages.error(request, 'Bu konuşmaya erişim yetkin yok.')
         return redirect('gelen_kutusu')
 
-    
     konusma_mesajlari = Message.objects.filter(
         ad=ilan,
     ).filter(
@@ -183,13 +171,11 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
         Q(sender=diger_kullanici, receiver=request.user)
     ).order_by('sent_at')
 
-    
     konusma_mesajlari.filter(
         receiver=request.user,
         is_read=False,
     ).update(is_read=True)
 
-    
     if request.method == 'POST':
         icerik = request.POST.get('icerik', '').strip()
         if icerik:
@@ -202,8 +188,8 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
         return redirect('konusma_detay', diger_kullanici_id=diger_kullanici_id, ilan_id=ilan_id)
 
     context = {
-        'diger_kullanici'  : diger_kullanici,
-        'ilan'             : ilan,
+        'diger_kullanici': diger_kullanici,
+        'ilan': ilan,
         'konusma_mesajlari': konusma_mesajlari,
     }
     return render(request, 'ilanlar/konusma_detay.html', context)
