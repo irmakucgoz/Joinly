@@ -31,7 +31,6 @@
 
     <div class="ilan-detay-card">
 
-        <!-- Kategori etiketi -->
         {% if ilan.category %}
             <span class="kategori-badge" style="background: {{ ilan.category.color }}">
                 {{ ilan.category.name }}
@@ -42,7 +41,19 @@
 
         <div class="ilan-meta">
             <span>📍 {{ ilan.location }}</span>
-            <span>👤 {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}</span>
+            <span>
+                👤
+                <!-- İlan sahibinin adına tıklayınca profil sayfasına git -->
+                <a href="{% url 'kullanici_profil' ilan.owner.id %}"
+                   style="color: #5d3ebc; text-decoration: none; font-weight: 500;">
+                    {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}
+                </a>
+                <!-- Güven skoru rozeti -->
+                <span style="font-size: 0.8rem; color: #ffc107; background: #fff9e6;
+                             padding: 1px 7px; border-radius: 10px; margin-left: 4px;">
+                    ⭐ {{ ilan.owner.average_rating|default:"0" }}
+                </span>
+            </span>
             <span>🕒 {{ ilan.created_at|date:"d F Y" }}</span>
         </div>
 
@@ -57,13 +68,11 @@
         <!-- Aksiyon Alanı -->
         {% if user.is_authenticated %}
             {% if ilan.owner == user %}
-                <!-- Kendi ilanı: düzenle / sil -->
                 <div class="ilan-aksiyonlar">
                     <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn btn-secondary">✏️ Düzenle</a>
                     <a href="{% url 'ilan_sil' ilan.id %}" class="btn btn-danger">🗑️ Sil</a>
                 </div>
             {% else %}
-                <!-- Başkasının ilanı: mesaj gönder -->
                 <div class="mesaj-formu">
                     <h3>📨 {{ ilan.owner.first_name }} ile İletişime Geç</h3>
                     <form method="post" action="{% url 'mesaj_gonder' ilan.id %}">

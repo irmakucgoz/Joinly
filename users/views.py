@@ -6,7 +6,6 @@ from .models import CustomUser
 
 
 def register_view(request):
-
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -49,10 +48,10 @@ def register_view(request):
 
 
 def login_view(request):
-    # Eski mesajları (çıkış yaptınız, hoş geldiniz vb.) temizle
+    # Eski mesajları temizle (çıkış yaptınız, hoş geldiniz vb.)
     storage = messages.get_messages(request)
     for _ in storage:
-        pass  # Mesajları okundu sayıp kuyruğu boşaltır
+        pass
 
     if request.user.is_authenticated:
         return redirect('home')
@@ -67,7 +66,6 @@ def login_view(request):
 
         try:
             user_obj = CustomUser.objects.get(username=username)
-            # Sistemde e-posta ile doğrulama yapılıyor
             user = authenticate(request, username=user_obj.email, password=password)
         except CustomUser.DoesNotExist:
             user = None
@@ -97,7 +95,7 @@ def profil_sayfasi(request):
     ).order_by('-created_at')
 
     context = {
-        'profile_user': request.user,   # Tutarlı değişken adı
+        'profile_user': request.user,
         'ilanlar'     : kullanici_ilanlari,
     }
     return render(request, 'users/profil.html', context)
@@ -105,9 +103,9 @@ def profil_sayfasi(request):
 
 def kullanici_profil(request, kullanici_id):
     """
-    Herhangi bir kullanıcının herkese açık profil sayfası.
-    Puanlama formu bu sayfayı kullanır; login gerekmez (sadece görüntüleme için).
-    Puanlama POST'u için login_required kontrolü kullanici_puanla view'ında yapılır.
+    Herkese açık kullanıcı profil sayfası.
+    Giriş yapılmasa da görüntülenebilir.
+    Puanlama formu giriş gerektirdiği için template'de kontrol edilir.
     """
     from ilanlar.models import Advertisement
     profile_user       = get_object_or_404(CustomUser, id=kullanici_id)
