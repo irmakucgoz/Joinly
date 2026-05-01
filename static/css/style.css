@@ -1,98 +1,177 @@
-/* Ana Renkler ve Font */
+/* ═══════════════════════════════════════════════
+   JOINLY — Birleşik Stil Dosyası (Temizlenmiş)
+   ═══════════════════════════════════════════════ */
+
+/* ── 1. Değişkenler ve Temel ──────────────────── */
 :root {
-    --primary-color: #5d3ebc; /* Joinly Moru */
-    --secondary-color: #f3f0ff;
-    --text-color: #333;
+    --primary:   #5d3ebc;
+    --primary-dark: #4a319a;
+    --primary-light: #f3f0ff;
+    --primary-border: #d4b8f5;
+    --accent:    #6c3fc5;
+    --text:      #333;
+    --text-muted: #777;
+    --border:    #e0e0e0;
+    --bg:        #f8f9fa;
+    --white:     #ffffff;
+    --danger:    #e53e3e;
+    --success-bg: #f0fff4;
+    --success-border: #c3e6cb;
+    --success-text: #27ae60;
+    --error-bg:   #fff0f0;
+    --error-border: #ffcccc;
+    --error-text: #c0392b;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 15px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.10);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+    background-color: var(--bg);
     margin: 0;
-    color: var(--text-color);
+    color: var(--text);
+    line-height: 1.6;
 }
 
-/* Navigasyon Çubuğu */
+/* ── 2. Navigasyon ────────────────────────────── */
 .navbar {
-    background-color: white;
+    background-color: var(--white);
     padding: 1rem 5%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .logo {
     font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--primary-color);
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .nav-links a {
     text-decoration: none;
-    margin-left: 20px;
-    color: var(--text-color);
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white !important;
-    padding: 8px 20px;
+    padding: 6px 14px;
     border-radius: 20px;
+    color: var(--text);
+    font-size: 0.9rem;
+    transition: background 0.2s, color 0.2s;
 }
 
-/* İlanlar Izgarası (Gereksinim 4) */
+.nav-links a:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+/* Eski <nav> etiketi kullanılan sayfalar için geriye dönük destek */
+nav {
+    background-color: var(--white);
+    padding: 1rem 5%;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+nav a:hover { color: var(--primary); }
+
+/* ── 3. Genel Konteyner ───────────────────────── */
 .container {
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 2rem 5%;
 }
 
-.ads-grid {
-    display: grid;
-    gap: 25px;
-    margin-top: 20px;
+/* ── 4. Butonlar (tek tanım) ─────────────────── */
+.btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.1s;
+    line-height: 1.4;
+    white-space: nowrap;
 }
 
-/* Masaüstü: 4 Sütun */
-@media (min-width: 992px) {
-    .ads-grid { grid-template-columns: repeat(4, 1fr); }
+.btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
 }
 
-/* Tablet/Mobil: 2 Sütun */
-@media (max-width: 991px) {
-    .ads-grid { grid-template-columns: repeat(2, 1fr); }
+.btn:active {
+    transform: translateY(0);
 }
 
-/* İlan Kartı Tasarımı */
-.ad-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-    position: relative;
-    border-top: 5px solid var(--primary-color);
+.btn-primary   { background: var(--accent);   color: var(--white); }
+.btn-secondary { background: #555;             color: var(--white); }
+.btn-danger    { background: var(--danger);    color: var(--white); }
+
+/* Tam genişlikli buton (mesaj gönder formu için) */
+.btn-block {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
 }
 
-.ad-card:hover {
-    transform: translateY(-5px);
+/* ── 5. Form Elemanları (tek tanım) ─────────────
+   box-sizing: border-box sayesinde padding ne olursa
+   olsun taşma yaşanmaz.
+   ─────────────────────────────────────────────── */
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+    /* box-sizing zaten global * kuralından geliyor */
 }
 
-.category-tag {
-    font-size: 0.75rem;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 15px;
-    font-weight: bold;
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108, 63, 197, 0.15);
 }
 
-.ad-info {
-    margin-top: 15px;
-    font-size: 0.85rem;
-    color: #777;
-    display: flex;
-    justify-content: space-between;
-}
-/* Form Elemanlarını Güzelleştirme */
 .form-group {
     margin-bottom: 20px;
     text-align: left;
@@ -100,55 +179,127 @@ body {
 
 .form-group label {
     display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #5d3ebc;
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box; /* Kutunun taşmasını önler */
-}
-
-.form-control:focus {
-    border-color: #5d3ebc;
-    outline: none;
-    box-shadow: 0 0 5px rgba(93, 62, 188, 0.2);
-}
-/* --- SAYFAYI TAM ORTALAYAN KONTEYNER --- */
-.auth-container {
-    display: flex;
-    justify-content: center;    /* Yatayda tam orta */
-    align-items: center;        /* Dikeyde tam orta */
-    min-height: 100vh;          /* Ekranın tüm yüksekliğini kapla */
-    width: 100%;
-    background-color: #f3f0ff;  /* Arka planın o tatlı mor-gri tonu */
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-/* --- ORTADAKİ BEYAZ FORM KARTU --- */
-.auth-card {
-    background: white;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 450px;           /* Kartın çok yayılmaması için ideal genişlik */
-    text-align: center;         /* Başlıkları ortala */
-}
-
-/* --- FORM ALTINDAKİ LİNKLER --- */
-.auth-footer {
-    text-align: center;
-    margin-top: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--primary);
     font-size: 0.9rem;
 }
-/* --- Joinly Arama Çubuğu Tasarımı --- */
+
+/* ── 6. Alert Mesajları ──────────────────────── */
+.alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+}
+
+.alert-error,
+.alert-danger   { background: var(--error-bg);   border-color: var(--error-border);   color: var(--error-text); }
+.alert-success  { background: var(--success-bg); border-color: var(--success-border); color: var(--success-text); }
+.alert-info     { background: #e8f4fd; border-color: #bee3f8; color: #2b6cb0; }
+.alert-warning  { background: #fffbeb; border-color: #fbd38d; color: #b7791f; }
+
+/* ── 7. İlan Detay Sayfası ───────────────────── */
+.ilan-detay-card {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 36px 40px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+/* Kategori rozeti */
+.kategori-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--white);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+}
+
+/* İlan başlığı */
+.ilan-baslik {
+    font-size: 1.8rem;
+    margin: 0 0 16px 0;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+/* Meta bilgileri (konum, sahip, tarih) */
+.ilan-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+}
+
+/* Ayraç çizgisi */
+.ilan-ayrac {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+}
+
+/* Açıklama metni */
+.ilan-aciklama p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #444;
+    white-space: pre-line; /* Satır sonlarını koru */
+}
+
+/* Kendi ilanı aksiyonları (Düzenle / Sil) */
+.ilan-aksiyonlar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+/* Giriş yapmamış kullanıcı uyarısı */
+.giris-uyarisi {
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.giris-uyarisi a {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.giris-uyarisi a:hover { text-decoration: underline; }
+
+/* ── 8. Mesaj Formu (İlan Detayında) ─────────── */
+.mesaj-formu {
+    background: var(--primary-light);
+    border: 1px solid var(--primary-border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin-top: 24px;
+}
+
+.mesaj-formu h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    color: var(--accent);
+}
+
+/* textarea margin'i btn-block ile tutarlı */
+.mesaj-formu .form-control {
+    margin-bottom: 12px;
+}
+
+/* ── 9. Arama Çubuğu ─────────────────────────── */
 .search-section {
     margin-bottom: 30px;
     width: 100%;
@@ -156,15 +307,14 @@ body {
 
 .search-input-group {
     display: flex;
-    border: 2px solid #5d3ebc; /* Joinly Moru */
+    border: 2px solid var(--primary);
     border-radius: 30px;
     overflow: hidden;
-    background: white;
+    background: var(--white);
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s, transform 0.3s;
 }
 
-/* Kutuya tıklanınca mor parlasın */
 .search-input-group:focus-within {
     box-shadow: 0 0 12px rgba(93, 62, 188, 0.25);
     transform: translateY(-1px);
@@ -175,33 +325,114 @@ body {
     padding: 12px 20px;
     border: none;
     outline: none;
-    font-size: 16px;
-    color: #333;
+    font-size: 1rem;
+    color: var(--text);
 }
 
 .search-btn {
-    background: #5d3ebc;
-    color: white;
+    background: var(--primary);
+    color: var(--white);
     border: none;
-    padding: 0 25px;
-    font-weight: bold;
+    padding: 0 24px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s;
+    font-family: inherit;
 }
 
-.search-btn:hover {
-    background: #4a319a; /* Üstüne gelince koyulaşan mor */
+.search-btn:hover { background: var(--primary-dark); }
+
+/* ── 10. İlan Izgarası ───────────────────────── */
+.ads-grid {
+    display: grid;
+    gap: 24px;
+    margin-top: 20px;
+    grid-template-columns: repeat(4, 1fr);
 }
 
-/* İlan bulunamadığında çıkan yazı tipi */
+@media (max-width: 1100px) {
+    .ads-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .ads-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .ads-grid { grid-template-columns: 1fr; }
+}
+
+/* İlan Kartı */
+.ad-card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    border-top: 4px solid var(--primary);
+}
+
+.ad-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+}
+
+.category-tag {
+    font-size: 0.72rem;
+    color: var(--white);
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-weight: 700;
+}
+
+.ad-info {
+    margin-top: 12px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
 .no-ads {
     text-align: center;
-    padding: 40px;
-    background: #f8f9fa;
-    border-radius: 15px;
+    padding: 48px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
     margin-top: 20px;
+    color: var(--text-muted);
 }
-/* --- Profil Sayfası Stilleri --- */
+
+/* ── 11. Auth Sayfaları (Giriş / Kayıt) ─────── */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--primary-light);
+    padding: 20px;
+}
+
+.auth-card {
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+/* ── 12. Profil Sayfası ──────────────────────── */
 .profile-container {
     max-width: 900px;
     margin: 40px auto;
@@ -209,73 +440,68 @@ body {
 }
 
 .profile-card {
-    background: #fff;
-    border-radius: 15px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
     padding: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Hafif gölge */
-    border-left: 5px solid #5d3ebc; /* Sol tarafta Joinly Moru */
+    box-shadow: var(--shadow-sm);
+    border-left: 5px solid var(--primary);
     margin-bottom: 30px;
-    text-align: left;
 }
 
 .profile-card h2 {
-    color: #5d3ebc; /* Başlık Mor */
+    color: var(--primary);
     margin-top: 0;
 }
 
 .profile-info {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: #555;
-    margin-top: 15px;
+    margin-top: 14px;
 }
 
-.profile-info strong {
-    color: #333;
-}
-.profile-ads-section {
-    margin-top: 40px;
-}
+.profile-info strong { color: var(--text); }
+
+.profile-ads-section { margin-top: 40px; }
 
 .profile-ads-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Esnek ızgara */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 20px;
     margin-top: 20px;
 }
 
 .profile-ad-card {
-    background: #fff;
+    background: var(--white);
     border: 1px solid #eee;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     padding: 20px;
-    transition: transform 0.2s, box-shadow 0.2s; /* Hafif animasyon */
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .profile-ad-card:hover {
-    transform: translateY(-5px); /* Üzerine gelince yükselme */
-    box-shadow: 0 5px 15px rgba(93, 62, 188, 0.1); /* Morumsu gölge */
+    transform: translateY(-4px);
+    box-shadow: 0 5px 15px rgba(93, 62, 188, 0.1);
 }
 
 .profile-ad-card h4 {
-    margin: 0 0 10px 0;
-    color: #333;
+    margin: 0 0 8px 0;
+    color: var(--text);
 }
 
 .profile-ad-card p {
-    color: #777;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 14px;
 }
 
 .profile-ad-link {
     text-decoration: none;
-    color: #5d3ebc;
-    font-weight: bold;
-    font-size: 0.9rem;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 0.875rem;
 }
-/* ─── MESAJLAŞMA ─────────────────────────────── */
 
-/* Gelen Kutusu */
+/* ── 13. Mesajlaşma — Gelen Kutusu ───────────── */
 .konusma-listesi {
     display: flex;
     flex-direction: column;
@@ -287,41 +513,39 @@ body {
     display: flex;
     gap: 16px;
     padding: 16px;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     text-decoration: none;
     color: inherit;
     transition: box-shadow 0.2s;
 }
 
-.konusma-karti:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
+.konusma-karti:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.09); }
 
 .konusma-karti.okunmamis {
-    border-left: 4px solid #6c3fc5;
+    border-left: 4px solid var(--accent);
     background: #f8f4ff;
 }
 
 .avatar {
     width: 48px;
     height: 48px;
-    background: #6c3fc5;
-    color: white;
+    background: var(--accent);
+    color: var(--white);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 1.2rem;
+    font-weight: 700;
     flex-shrink: 0;
 }
 
 .avatar.buyuk {
     width: 64px;
     height: 64px;
-    font-size: 28px;
+    font-size: 1.75rem;
 }
 
 .konusma-sag {
@@ -337,21 +561,22 @@ body {
 }
 
 .yeni-badge {
-    background: #6c3fc5;
-    color: white;
-    font-size: 11px;
+    background: var(--accent);
+    color: var(--white);
+    font-size: 0.68rem;
     padding: 2px 8px;
     border-radius: 20px;
+    font-weight: 700;
 }
 
 .konusma-ilan {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #888;
     margin-bottom: 4px;
 }
 
 .konusma-son-mesaj {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #555;
     white-space: nowrap;
     overflow: hidden;
@@ -359,30 +584,31 @@ body {
 }
 
 .konusma-zaman {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #aaa;
     margin-top: 4px;
 }
 
-/* Konuşma Detay */
+/* ── 14. Mesajlaşma — Konuşma Detayı ─────────── */
 .konusma-header {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 20px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border);
     margin-bottom: 20px;
 }
 
+.konusma-header h2 { margin: 0; }
+
 .konusma-ilan-adi {
-    font-size: 13px;
+    font-size: 0.8rem;
     color: #888;
-    margin: 0;
+    margin: 4px 0 0 0;
 }
 
-.konusma-ilan-adi a {
-    color: #6c3fc5;
-}
+.konusma-ilan-adi a { color: var(--accent); text-decoration: none; }
+.konusma-ilan-adi a:hover { text-decoration: underline; }
 
 .mesaj-baloncuklari {
     display: flex;
@@ -394,7 +620,7 @@ body {
 }
 
 .balon {
-    max-width: 70%;
+    max-width: 72%;
     display: flex;
     flex-direction: column;
 }
@@ -412,25 +638,25 @@ body {
 .balon-icerik {
     padding: 12px 16px;
     border-radius: 18px;
-    font-size: 15px;
+    font-size: 0.95rem;
     line-height: 1.5;
     word-break: break-word;
 }
 
-.balon.benim .balon-icerik {
-    background: #6c3fc5;
-    color: white;
+.balon.benim  .balon-icerik {
+    background: var(--accent);
+    color: var(--white);
     border-bottom-right-radius: 4px;
 }
 
 .balon.karsi .balon-icerik {
     background: #f0f0f0;
-    color: #333;
+    color: var(--text);
     border-bottom-left-radius: 4px;
 }
 
 .balon-zaman {
-    font-size: 11px;
+    font-size: 0.68rem;
     color: #aaa;
     margin-top: 4px;
     padding: 0 4px;
@@ -439,40 +665,22 @@ body {
 .mesaj-yazma-alani {
     position: sticky;
     bottom: 0;
-    background: #fff;
-    padding: 16px 0;
-    border-top: 1px solid #eee;
+    background: var(--white);
+    padding: 16px 0 8px;
+    border-top: 1px solid var(--border);
     margin-top: 16px;
 }
 
 .mesaj-input-satiri {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: flex-end;
 }
 
-.mesaj-input-satiri textarea {
+.mesaj-input-satiri .form-control {
     flex: 1;
     resize: none;
-}
-
-/* Mesaj formu (ilan detayında) */
-.mesaj-formu {
-    background: #f8f4ff;
-    border: 1px solid #d4b8f5;
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 24px;
-}
-
-.mesaj-formu h3 {
-    margin-top: 0;
-    color: #6c3fc5;
-}
-
-.mesaj-formu textarea {
-    width: 100%;
-    margin-bottom: 12px;
+    margin-bottom: 0;
 }
 
 /* Boş durum */
@@ -482,65 +690,54 @@ body {
     color: #888;
 }
 
-/* Butonlar */
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    text-decoration: none;
-    transition: opacity 0.2s;
+/* ── 15. Responsive Düzenlemeler ─────────────── */
+@media (max-width: 768px) {
+    .ilan-detay-card {
+        margin: 20px auto;
+        padding: 20px 18px;
+    }
+
+    .ilan-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ilan-aksiyonlar {
+        flex-direction: column;
+    }
+
+    .ilan-aksiyonlar .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 5%;
+    }
+
+    .nav-links {
+        justify-content: center;
+    }
+
+    .auth-card {
+        padding: 28px 20px;
+    }
+
+    .balon { max-width: 88%; }
 }
 
-.btn:hover { opacity: 0.85; }
+@media (max-width: 480px) {
+    .container { padding: 1rem 4%; }
 
-.btn-primary   { background: #6c3fc5; color: white; }
-.btn-secondary { background: #555;    color: white; }
-.btn-danger    { background: #e53e3e; color: white; }
+    .mesaj-formu { padding: 16px; }
 
-/* Alert mesajları */
-.alert {
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 14px;
-}
+    .mesaj-input-satiri {
+        flex-direction: column;
+    }
 
-.alert-error   { background: #fff0f0; border: 1px solid #ffcccc; color: #c0392b; }
-.alert-success { background: #f0fff4; border: 1px solid #c3e6cb; color: #27ae60; }
-/* İlan Detay Kartını Rahatlat */
-.ilan-detay-card {
-    max-width: 800px; /* Çok yayılmasın */
-    margin: 40px auto; /* Ortala ve üstten boşluk bırak */
-    padding: 30px;
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-
-/* Mesaj Alanını Güzelleştir */
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 8px;
-    font-family: inherit;
-    margin-bottom: 15px;
-    transition: border-color 0.2s;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #6c3fc5; /* Senin o güzel mor tonun */
-}
-
-/* Meta Bilgileri Hizala */
-.ilan-meta {
-    display: flex;
-    gap: 20px;
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 20px;
+    .mesaj-input-satiri .btn {
+        width: 100%;
+    }
 }
