@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ diger_kullanici.first_name }} ile Konuşma — Joinly</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<nav>
+    <a href="{% url 'gelen_kutusu' %}">← Mesajlar</a>
+    <a href="{% url 'home' %}">Ana Sayfa</a>
+    <a href="{% url 'logout' %}">Çıkış</a>
+</nav>
+
+<div class="container">
+
+    <!-- Konuşma başlığı -->
+    <div class="konusma-header">
+        <div class="avatar buyuk">{{ diger_kullanici.first_name|first }}</div>
+        <div>
+            <h2>{{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}</h2>
+            <p class="konusma-ilan-adi">
+                İlan: <a href="{% url 'ilan_detay' ilan.id %}">{{ ilan.title }}</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Mesaj baloncukları -->
+    <div class="mesaj-baloncuklari" id="mesajlar">
+        {% for mesaj in konusma_mesajlari %}
+            <div class="balon {% if mesaj.sender == user %}benim{% else %}karsi{% endif %}">
+                <div class="balon-icerik">{{ mesaj.content }}</div>
+                <div class="balon-zaman">{{ mesaj.sent_at|date:"d M, H:i" }}</div>
+            </div>
+        {% empty %}
+            <p class="bos-konusma">Henüz mesaj yok. İlk mesajı sen gönder!</p>
+        {% endfor %}
+    </div>
+
+    <!-- Yeni mesaj gönderme formu -->
+    <div class="mesaj-yazma-alani">
+        <form method="post" id="mesaj-form">
+            {% csrf_token %}
+            <div class="mesaj-input-satiri">
+                <textarea
+                    name="icerik"
+                    id="icerik"
+                    rows="2"
+                    placeholder="Mesajını yaz..."
+                    class="form-control"
+                    required
+                ></textarea>
+                <button type="submit" class="btn btn-primary">Gönder ➤</button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- Sayfayı en alta kaydır (son mesaj görünsün) -->
+<script>
+    const mesajlar = document.getElementById('mesajlar');
+    mesajlar.scrollTop = mesajlar.scrollHeight;
+
+    // Enter tuşuyla gönder (Shift+Enter yeni satır)
+    document.getElementById('icerik').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('mesaj-form').submit();
+        }
+    });
+</script>
+
+</body>
+</html>

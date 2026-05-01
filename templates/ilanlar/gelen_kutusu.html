@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesajlar — Joinly</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<nav>
+    <a href="{% url 'home' %}">← Ana Sayfa</a>
+    <a href="{% url 'profil' %}">Profilim</a>
+    <a href="{% url 'logout' %}">Çıkış</a>
+</nav>
+
+<div class="container">
+    <h1>📬 Mesajlar</h1>
+
+    {% if konusmalar %}
+        <div class="konusma-listesi">
+            {% for k in konusmalar %}
+                <a href="{% url 'konusma_detay' k.diger_kullanici.id k.ilan.id %}" class="konusma-karti {% if k.okunmamis %}okunmamis{% endif %}">
+                    <div class="konusma-sol">
+                        <div class="avatar">{{ k.diger_kullanici.first_name|first }}</div>
+                    </div>
+                    <div class="konusma-sag">
+                        <div class="konusma-baslik">
+                            <strong>{{ k.diger_kullanici.first_name }} {{ k.diger_kullanici.last_name }}</strong>
+                            {% if k.okunmamis %}
+                                <span class="yeni-badge">Yeni</span>
+                            {% endif %}
+                        </div>
+                        <div class="konusma-ilan">İlan: {{ k.ilan.title }}</div>
+                        <div class="konusma-son-mesaj">{{ k.son_mesaj.content|truncatechars:60 }}</div>
+                        <div class="konusma-zaman">{{ k.son_mesaj.sent_at|date:"d M, H:i" }}</div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bos-durum">
+            <p>Henüz hiç mesajın yok.</p>
+            <a href="{% url 'home' %}" class="btn btn-primary">İlanlara Göz At</a>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

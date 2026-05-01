@@ -273,3 +273,274 @@ body {
     font-weight: bold;
     font-size: 0.9rem;
 }
+/* ─── MESAJLAŞMA ─────────────────────────────── */
+
+/* Gelen Kutusu */
+.konusma-listesi {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.konusma-karti {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s;
+}
+
+.konusma-karti:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.konusma-karti.okunmamis {
+    border-left: 4px solid #6c3fc5;
+    background: #f8f4ff;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    background: #6c3fc5;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.avatar.buyuk {
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+}
+
+.konusma-sag {
+    flex: 1;
+    min-width: 0;
+}
+
+.konusma-baslik {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.yeni-badge {
+    background: #6c3fc5;
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.konusma-ilan {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.konusma-son-mesaj {
+    font-size: 14px;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.konusma-zaman {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+/* Konuşma Detay */
+.konusma-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.konusma-ilan-adi {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+}
+
+.konusma-ilan-adi a {
+    color: #6c3fc5;
+}
+
+.mesaj-baloncuklari {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 16px 0;
+}
+
+.balon {
+    max-width: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+.balon.benim {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.balon.karsi {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.balon-icerik {
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.balon.benim .balon-icerik {
+    background: #6c3fc5;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.balon.karsi .balon-icerik {
+    background: #f0f0f0;
+    color: #333;
+    border-bottom-left-radius: 4px;
+}
+
+.balon-zaman {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 4px;
+    padding: 0 4px;
+}
+
+.mesaj-yazma-alani {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 16px 0;
+    border-top: 1px solid #eee;
+    margin-top: 16px;
+}
+
+.mesaj-input-satiri {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.mesaj-input-satiri textarea {
+    flex: 1;
+    resize: none;
+}
+
+/* Mesaj formu (ilan detayında) */
+.mesaj-formu {
+    background: #f8f4ff;
+    border: 1px solid #d4b8f5;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+}
+
+.mesaj-formu h3 {
+    margin-top: 0;
+    color: #6c3fc5;
+}
+
+.mesaj-formu textarea {
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+/* Boş durum */
+.bos-durum {
+    text-align: center;
+    padding: 60px 0;
+    color: #888;
+}
+
+/* Butonlar */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.btn:hover { opacity: 0.85; }
+
+.btn-primary   { background: #6c3fc5; color: white; }
+.btn-secondary { background: #555;    color: white; }
+.btn-danger    { background: #e53e3e; color: white; }
+
+/* Alert mesajları */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.alert-error   { background: #fff0f0; border: 1px solid #ffcccc; color: #c0392b; }
+.alert-success { background: #f0fff4; border: 1px solid #c3e6cb; color: #27ae60; }
+/* İlan Detay Kartını Rahatlat */
+.ilan-detay-card {
+    max-width: 800px; /* Çok yayılmasın */
+    margin: 40px auto; /* Ortala ve üstten boşluk bırak */
+    padding: 30px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+/* Mesaj Alanını Güzelleştir */
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: inherit;
+    margin-bottom: 15px;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #6c3fc5; /* Senin o güzel mor tonun */
+}
+
+/* Meta Bilgileri Hizala */
+.ilan-meta {
+    display: flex;
+    gap: 20px;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}

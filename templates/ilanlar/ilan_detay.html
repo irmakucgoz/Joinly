@@ -3,39 +3,90 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>{{ ilan.title }} | Joinly</title>
+    <title>{{ ilan.title }} — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <div class="auth-container">
-        <div class="auth-card" style="max-width: 600px; text-align: left;">
-            <span class="category-tag" style="background-color: {{ ilan.category.color }}; display: inline-block; margin-bottom: 15px;">
+
+<nav>
+    <a href="{% url 'home' %}">← Ana Sayfa</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'gelen_kutusu' %}">📬 Mesajlar</a>
+        <a href="{% url 'profil' %}">Profilim</a>
+        <a href="{% url 'logout' %}">Çıkış</a>
+    {% else %}
+        <a href="{% url 'login' %}">Giriş</a>
+    {% endif %}
+</nav>
+
+<div class="container">
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    <div class="ilan-detay-card">
+        <!-- Kategori etiketi -->
+        {% if ilan.category %}
+            <span class="kategori-badge" style="background: {{ ilan.category.color }}">
                 {{ ilan.category.name }}
             </span>
-            <h1 style="color: #5d3ebc; margin: 10px 0;">{{ ilan.title }}</h1>
-            <p style="font-size: 1.1rem; line-height: 1.6; color: #444;">{{ ilan.description }}</p>
-            
-            <div class="ad-info" style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
-                <span>👤 <strong>Yayınlayan:</strong> {{ ilan.owner.username }}</span>
-                <span>📍 <strong>Konum:</strong> {{ ilan.location }}</span>
-                <span>📅 <strong>Tarih:</strong> {{ ilan.created_at|date:"d F Y" }}</span>
-            </div>
+        {% endif %}
 
-            {% if user == ilan.owner %}
-                <div style="margin-top: 30px; display: flex; gap: 10px;">
-                    <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn-primary" style="background: #ffa500; text-decoration: none; flex: 1; text-align: center;">
-                        Düzenle
-                    </a>
-                    <a href="{% url 'ilan_sil' ilan.id %}" class="btn-primary" style="background: #ff4d4d; text-decoration: none; flex: 1; text-align: center;">
-                        Sil
-                    </a>
+        <h1>{{ ilan.title }}</h1>
+
+        <div class="ilan-meta">
+            <span>📍 {{ ilan.location }}</span>
+            <span>👤 {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}</span>
+            <span>🕒 {{ ilan.created_at|date:"d F Y" }}</span>
+        </div>
+
+        <hr>
+
+        <div class="ilan-aciklama">
+            <p>{{ ilan.description }}</p>
+        </div>
+
+        <hr>
+
+        <!-- MESAJ GÖNDER FORMU -->
+        {% if user.is_authenticated %}
+            {% if ilan.owner == user %}
+                <!-- Kendi ilanı — düzenle/sil butonları -->
+                <div class="ilan-aksiyonlar">
+                    <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn btn-secondary">✏️ Düzenle</a>
+                    <a href="{% url 'ilan_sil' ilan.id %}" class="btn btn-danger">🗑️ Sil</a>
+                </div>
+            {% else %}
+                <!-- Başkasının ilanı — mesaj gönder -->
+                <!-- YENİ YAPIŞTIRACAĞIN KOD BURASI -->
+                <div class="mesaj-formu" style="margin-top: 30px; border-top: 2px dashed #eee; padding-top: 20px;">
+                    <h3 style="margin-bottom: 15px; color: #6c3fc5;">📨 {{ ilan.owner.first_name }} ile İletişime Geç</h3>
+                    <form method="post" action="{% url 'mesaj_gonder' ilan.id %}">
+                        {% csrf_token %}
+                        <textarea 
+                            name="icerik" 
+                            rows="4" 
+                            placeholder="Merhaba, ilanınla ilgili sormak istediğim bir şey var..." 
+                            class="form-control" 
+                            style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ddd;"
+                            required
+                        ></textarea>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px; font-weight: bold;">
+                            Mesajı Gönder
+                        </button>
+                    </form>
                 </div>
             {% endif %}
+        {% else %}
+            <p>
+                Mesaj göndermek için
+                <a href="{% url 'login' %}">giriş yap</a>.
+            </p>
+        {% endif %}
 
-            <div class="auth-footer" style="margin-top: 30px;">
-                <a href="{% url 'home' %}" style="text-decoration: none; color: #777;">← Listeye Geri Dön</a>
-            </div>
-        </div>
     </div>
+</div>
+
 </body>
 </html>
