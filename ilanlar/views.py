@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Max
-from .models import Advertisement, Category, Message, Review  # Review eklendi
+from django.db.models import Q
+from .models import Advertisement, Category, Message, Review
 from .forms import AdvertisementForm
+
 
 def home(request):
     query      = request.GET.get('q', '').strip()
@@ -28,9 +29,11 @@ def home(request):
     }
     return render(request, 'index.html', context)
 
+
 def ilan_detay(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id)
     return render(request, 'ilanlar/ilan_detay.html', {'ilan': ilan})
+
 
 @login_required
 def ilan_olustur(request):
@@ -46,6 +49,7 @@ def ilan_olustur(request):
         form = AdvertisementForm()
     return render(request, 'ilanlar/ilan_form.html', {'form': form, 'baslik': 'Yeni İlan Oluştur'})
 
+
 @login_required
 def ilan_duzenle(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id, owner=request.user)
@@ -59,6 +63,7 @@ def ilan_duzenle(request, ilan_id):
         form = AdvertisementForm(instance=ilan)
     return render(request, 'ilanlar/ilan_form.html', {'form': form, 'baslik': 'İlanı Düzenle'})
 
+
 @login_required
 def ilan_sil(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id, owner=request.user)
@@ -67,6 +72,7 @@ def ilan_sil(request, ilan_id):
         messages.success(request, 'İlan silindi.')
         return redirect('home')
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
+
 
 # ─────────────────────────────────────────
 # MESAJLAŞMA VIEW'LARI
@@ -98,6 +104,7 @@ def mesaj_gonder(request, ilan_id):
 
     return redirect('ilan_detay', ilan_id=ilan_id)
 
+
 @login_required
 def gelen_kutusu(request):
     tum_mesajlar = Message.objects.filter(
@@ -106,7 +113,7 @@ def gelen_kutusu(request):
 
     konusmalar = {}
     for mesaj in tum_mesajlar:
-        diger  = mesaj.receiver if mesaj.sender == request.user else mesaj.sender
+        diger   = mesaj.receiver if mesaj.sender == request.user else mesaj.sender
         anahtar = (diger.id, mesaj.ad.id)
 
         if anahtar not in konusmalar:
@@ -126,6 +133,7 @@ def gelen_kutusu(request):
         'konusmalar': list(konusmalar.values()),
     }
     return render(request, 'ilanlar/gelen_kutusu.html', context)
+
 
 @login_required
 def konusma_detay(request, diger_kullanici_id, ilan_id):
@@ -188,30 +196,55 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
     }
     return render(request, 'ilanlar/konusma_detay.html', context)
 
+
 # ─────────────────────────────────────────
-# YENİ: PUANLAMA SİSTEMİ VIEW'I
+# PUANLAMA SİSTEMİ VIEW'I
 # ─────────────────────────────────────────
 
 @login_required
 def kullanici_puanla(request, hedef_kullanici_id):
+    """
+    Bir kullanıcıya puan ve yorum bırakır.
+
+    DÜZELTMELER:
+    1. Kendine puan verme engeli POST öncesinde de kontrol ediliyor.
+    2. `next` parametresi destekleniyor: form action'ına ?next=... eklenirse
+       işlem sonrasında o URL'e yönlendirilir (örn: konuşma sayfasına dönüş).
+    3. Redirect hedefi artık kullanıcının profil sayfası — daha anlamlı UX.
+    """
     from django.contrib.auth import get_user_model
-    User = get_user_model()
+    User        = get_user_model()
     target_user = get_object_or_404(User, id=hedef_kullanici_id)
 
-    if request.method == 'POST':
-        puan = request.POST.get('rating')
-        yorum = request.POST.get('comment', '').strip()
+    # GET ile gelen ?next= parametresini al (POST'tan önce form işlenmeden)
+    next_url = request.POST.get('next') or request.GET.get('next', '')
 
+    if request.method == 'POST':
+        # Kendine puan verme engeli
         if request.user == target_user:
             messages.error(request, 'Kendine puan veremezsin!')
-            return redirect('home')
+            if next_url:
+                return redirect(next_url)
+            return redirect('kullanici_profil', kullanici_id=target_user.id)
 
-        if puan:
-            Review.objects.update_or_create(
-                reviewer=request.user,
-                target_user=target_user,
-                defaults={'rating': puan, 'comment': yorum}
-            )
-            messages.success(request, f'{target_user.username} adlı kullanıcıya puanın iletildi!')
-        
-    return redirect('home')
+        puan  = request.POST.get('rating', '').strip()
+        yorum = request.POST.get('comment', '').strip()
+
+        if not puan:
+            messages.error(request, 'Lütfen bir puan seç.')
+            if next_url:
+                return redirect(next_url)
+            return redirect('kullanici_profil', kullanici_id=target_user.id)
+
+        # Daha önce puan verdiyse güncelle, vermediyse oluştur
+        Review.objects.update_or_create(
+            reviewer=request.user,
+            target_user=target_user,
+            defaults={'rating': int(puan), 'comment': yorum},
+        )
+        messages.success(request, f'{target_user.username} adlı kullanıcıya puanın iletildi!')
+
+    # next_url varsa oraya, yoksa hedef kullanıcının profil sayfasına dön
+    if next_url:
+        return redirect(next_url)
+    return redirect('kullanici_profil', kullanici_id=target_user.id)

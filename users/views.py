@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,7 +6,7 @@ from .models import CustomUser
 
 
 def register_view(request):
-    
+
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -17,7 +17,6 @@ def register_view(request):
         email      = request.POST.get('email', '').strip()
         password   = request.POST.get('password', '')
 
-        
         if not all([username, first_name, last_name, email, password]):
             messages.error(request, 'Lütfen tüm alanları doldurun.')
             return render(request, 'users/register.html')
@@ -34,16 +33,14 @@ def register_view(request):
             messages.error(request, 'Bu e-posta adresiyle zaten bir hesap var.')
             return render(request, 'users/register.html')
 
-        
         user = CustomUser.objects.create_user(
             username=username,
             email=email,
-            password=password,      
+            password=password,
             first_name=first_name,
             last_name=last_name,
         )
 
-        
         login(request, user)
         messages.success(request, f'Hoş geldin, {first_name}! Hesabın oluşturuldu.')
         return redirect('home')
@@ -52,11 +49,10 @@ def register_view(request):
 
 
 def login_view(request):
-    # --- TEMİZLİK: Eski mesajları (çıkış yaptınız, hoş geldiniz vb.) siliyoruz ---
+    # Eski mesajları (çıkış yaptınız, hoş geldiniz vb.) temizle
     storage = messages.get_messages(request)
     for _ in storage:
-        pass # Mesajları okundu sayıp kuyruğu boşaltır
-    # --------------------------------------------------------------------------
+        pass  # Mesajları okundu sayıp kuyruğu boşaltır
 
     if request.user.is_authenticated:
         return redirect('home')
@@ -71,7 +67,7 @@ def login_view(request):
 
         try:
             user_obj = CustomUser.objects.get(username=username)
-            # Senin sisteminde email ile doğrulama yapılıyor
+            # Sistemde e-posta ile doğrulama yapılıyor
             user = authenticate(request, username=user_obj.email, password=password)
         except CustomUser.DoesNotExist:
             user = None
@@ -94,12 +90,33 @@ def logout_view(request):
 
 @login_required
 def profil_sayfasi(request):
+    """Giriş yapmış kullanıcının kendi profil sayfası."""
     from ilanlar.models import Advertisement
     kullanici_ilanlari = Advertisement.objects.filter(
         owner=request.user
     ).order_by('-created_at')
 
     context = {
-        'ilanlar': kullanici_ilanlari,
+        'profile_user': request.user,   # Tutarlı değişken adı
+        'ilanlar'     : kullanici_ilanlari,
+    }
+    return render(request, 'users/profil.html', context)
+
+
+def kullanici_profil(request, kullanici_id):
+    """
+    Herhangi bir kullanıcının herkese açık profil sayfası.
+    Puanlama formu bu sayfayı kullanır; login gerekmez (sadece görüntüleme için).
+    Puanlama POST'u için login_required kontrolü kullanici_puanla view'ında yapılır.
+    """
+    from ilanlar.models import Advertisement
+    profile_user       = get_object_or_404(CustomUser, id=kullanici_id)
+    kullanici_ilanlari = Advertisement.objects.filter(
+        owner=profile_user
+    ).order_by('-created_at')
+
+    context = {
+        'profile_user': profile_user,
+        'ilanlar'     : kullanici_ilanlari,
     }
     return render(request, 'users/profil.html', context)

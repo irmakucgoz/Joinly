@@ -23,13 +23,19 @@
         }
         .puanlama-formu {
             display: flex;
-            flex-direction: column;
             gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
         }
-        .puan-secimi select, .puan-yorum input {
+        .puanlama-formu select,
+        .puanlama-formu input[type="text"] {
             padding: 8px;
             border-radius: 6px;
             border: 1px solid #ddd;
+        }
+        .puanlama-formu input[type="text"] {
+            flex: 1;
+            min-width: 160px;
         }
         .btn-puanla {
             background-color: #5d3ebc;
@@ -42,7 +48,7 @@
             transition: background 0.3s;
         }
         .btn-puanla:hover { background-color: #4a319a; }
-        
+
         .guven-rozeti-kucuk {
             font-size: 0.85rem;
             color: #ffc107;
@@ -51,6 +57,20 @@
             border-radius: 10px;
             margin-left: 5px;
         }
+
+        /* Mesaj baloncukları */
+        .benim  { text-align: right; }
+        .karsi  { text-align: left; }
+        .balon-icerik {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-break: break-word;
+        }
+        .benim  .balon-icerik { background: #5d3ebc; color: white; }
+        .karsi  .balon-icerik { background: #f0f0f0; color: #333; }
+        .balon-zaman { font-size: 0.7rem; color: #999; margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -61,6 +81,16 @@
     <a href="{% url 'logout' %}">Çıkış</a>
 </nav>
 
+{% if messages %}
+    <div style="padding: 10px 20px;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" style="padding: 10px; border-radius: 6px; margin-bottom: 8px; background: {% if 'error' in message.tags %}#ffe0e0{% else %}#e0ffe0{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
 <div class="container">
 
     <!-- Konuşma başlığı -->
@@ -68,8 +98,10 @@
         <div class="avatar buyuk">{{ diger_kullanici.first_name|first }}</div>
         <div>
             <h2>
-                {{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}
-                <!-- YENİ: İsim yanına küçük puan rozeti -->
+                <a href="{% url 'kullanici_profil' diger_kullanici.id %}" style="text-decoration: none; color: inherit;">
+                    {{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}
+                </a>
+                <!-- İsim yanına küçük puan rozeti -->
                 <span class="guven-rozeti-kucuk">⭐ {{ diger_kullanici.average_rating|default:"0" }}</span>
             </h2>
             <p class="konusma-ilan-adi">
@@ -81,6 +113,7 @@
     <!-- Mesaj baloncukları -->
     <div class="mesaj-baloncuklari" id="mesajlar">
         {% for mesaj in konusma_mesajlari %}
+            {# request.user ile karşılaştırma — Django template'de 'user' request.user'a eşittir #}
             <div class="balon {% if mesaj.sender == user %}benim{% else %}karsi{% endif %}">
                 <div class="balon-icerik">{{ mesaj.content }}</div>
                 <div class="balon-zaman">{{ mesaj.sent_at|date:"d M, H:i" }}</div>
@@ -90,22 +123,22 @@
         {% endfor %}
     </div>
 
-    <!-- YENİ: PUANLAMA FORMU (Mesaj kutusunun hemen üstünde) -->
+    <!-- PUANLAMA FORMU (Mesaj kutusunun hemen üstünde) -->
     <div class="puanlama-alani">
         <span class="puanlama-baslik">🌟 Bu kişiyle deneyimin nasıldı? Puanla:</span>
         <form action="{% url 'kullanici_puanla' diger_kullanici.id %}" method="post" class="puanlama-formu">
             {% csrf_token %}
-            <div style="display: flex; gap: 10px;">
-                <select name="rating" required>
-                    <option value="5">5 - Harika</option>
-                    <option value="4">4 - İyi</option>
-                    <option value="3">3 - Orta</option>
-                    <option value="2">2 - Kötü</option>
-                    <option value="1">1 - Çok Kötü</option>
-                </select>
-                <input type="text" name="comment" placeholder="Kısa bir yorum bırak (isteğe bağlı)..." style="flex: 1;">
-                <button type="submit" class="btn-puanla">Puanla</button>
-            </div>
+            {# Puanlama sonrası bu konuşma sayfasına geri dön #}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <select name="rating" required>
+                <option value="5">⭐⭐⭐⭐⭐ — Harika</option>
+                <option value="4">⭐⭐⭐⭐ — İyi</option>
+                <option value="3">⭐⭐⭐ — Orta</option>
+                <option value="2">⭐⭐ — Kötü</option>
+                <option value="1">⭐ — Çok Kötü</option>
+            </select>
+            <input type="text" name="comment" placeholder="Kısa bir yorum bırak (isteğe bağlı)...">
+            <button type="submit" class="btn-puanla">Puanla</button>
         </form>
     </div>
 
