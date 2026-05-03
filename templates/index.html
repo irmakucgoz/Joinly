@@ -4,105 +4,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joinly | Ana Sayfa</title>
+    <title>Joinly — Birlikte Daha İyi</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        .search-section { margin-bottom: 30px; }
-        .search-input-group { display: flex; border: 2px solid #5d3ebc; border-radius: 30px; overflow: hidden; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .search-input-group input { flex: 1; padding: 12px 20px; border: none; outline: none; font-size: 16px; }
-        .search-btn { background: #5d3ebc; color: white; border: none; padding: 0 25px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .search-btn:hover { background: #4a319a; }
-        
-        /* 4. Adımdaki CSS'i buraya veya style.css'e eklemeyi unutma */
-        .notification-badge {
-            background-color: #ff4d4d;
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 50%;
-            position: absolute;
-            top: -8px;
-            right: -10px;
-            box-shadow: 0 0 5px rgba(255, 77, 77, 0.5);
-        }
-    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="{% url 'home' %}" style="text-decoration: none;">
-                <div class="logo">Joinly</div>
+
+<nav class="navbar">
+    <a href="{% url 'home' %}" class="navbar-logo">
+        Joinly<span class="navbar-logo-dot"></span>
+    </a>
+    <div class="navbar-links">
+        {% if user.is_authenticated %}
+            <span class="navbar-greeting">Merhaba, <strong>{{ user.first_name|default:user.username }}</strong></span>
+            <a href="{% url 'gelen_kutusu' %}" class="navbar-link" style="position:relative;">
+                📬 Mesajlar
+                {% if unread_count > 0 %}
+                    <span class="notif-badge">{{ unread_count }}</span>
+                {% endif %}
             </a>
-            
-            <div class="nav-links">
-                <!-- 'Ana Sayfa' linki logo zaten oraya gittiği için kaldırıldı -->
+            <a href="{% url 'profil' %}" class="navbar-link">Profilim</a>
+            <a href="{% url 'ilan_olustur' %}" class="navbar-btn-primary">+ İlan Ver</a>
+            <a href="{% url 'logout' %}" class="navbar-btn-danger">Çıkış</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="navbar-btn-outline">Giriş Yap</a>
+            <a href="{% url 'register' %}" class="navbar-btn-primary">Kayıt Ol</a>
+        {% endif %}
+    </div>
+</nav>
 
+<main class="container">
+    {% block content %}
+
+    <!-- Hero Arama Bölümü -->
+    <div class="home-hero">
+        <div class="home-hero-inner">
+            <div class="home-hero-eyebrow">✦ Türkiye'nin Networking Platformu</div>
+            <h1>Birlikte daha fazlasını başar</h1>
+            <p>Ders al, etkinliklere katıl, yeni insanlar tanış. Joinly ile doğru kişiye ulaşmak hiç bu kadar kolay olmamıştı.</p>
+            <form action="{% url 'home' %}" method="GET">
+                <div class="hero-search">
+                    <input type="text" name="q" placeholder="Ders, etkinlik veya arkadaş ara…" value="{{ query|default:'' }}" autocomplete="off">
+                    <button type="submit">Ara →</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Uyarı / başarı mesajları -->
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    <!-- İlan Listesi -->
+    <div class="section-header">
+        <h2>Aktif İlanlar</h2>
+        {% if user.is_authenticated %}
+            <a href="{% url 'ilan_olustur' %}" class="btn btn-primary">+ Yeni İlan</a>
+        {% endif %}
+    </div>
+
+    <div class="ads-grid">
+        {% for ilan in ilanlar %}
+            <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration:none;color:inherit;display:block;">
+                <div class="ad-card">
+                    {% if ilan.category %}
+                        <span class="category-tag" style="background:{{ ilan.category.color }}">
+                            {{ ilan.category.name }}
+                        </span>
+                    {% endif %}
+                    <h3>{{ ilan.title }}</h3>
+                    <p>{{ ilan.description|truncatewords:14 }}</p>
+                    <div class="ad-info">
+                        <span>👤 {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}</span>
+                        <span>{{ ilan.created_at|date:"d M" }}</span>
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="no-ads">
+                <p>Henüz ilan yok veya arama kriterlerinize uygun sonuç bulunamadı.</p>
                 {% if user.is_authenticated %}
-                    <span style="margin-right: 15px;">Hoş geldin, <strong>{{ user.username }}</strong></span>
-                    
-                    <!-- Yeni Mesajlar Sekmesi -->
-                    <a href="{% url 'gelen_kutusu' %}" style="margin-right: 15px; text-decoration: none; color: #555; font-weight: 500; position: relative;">
-                        📬 Mesajlar
-                        {% if unread_count > 0 %}
-                            <span class="notification-badge">{{ unread_count }}</span>
-                        {% endif %}
-                    </a>
-
-                    <a href="{% url 'profil' %}" style="margin-right: 15px; text-decoration: none; color: #5d3ebc; font-weight: bold;">
-                        Profilim
-                    </a>
-                    
-                    <a href="{% url 'logout' %}" class="btn-logout">Çıkış Yap</a>
+                    <a href="{% url 'ilan_olustur' %}" class="btn btn-primary">İlk İlanı Sen Ver</a>
                 {% else %}
-                    <a href="{% url 'login' %}" style="margin-right: 15px; text-decoration: none;">Giriş Yap</a>
-                    <a href="{% url 'register' %}" class="btn-primary">Kayıt Ol</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary">Hemen Üye Ol</a>
                 {% endif %}
             </div>
-        </nav>
-    </header>
+        {% endfor %}
+    </div>
 
-    <main class="container">
-        {% block content %}
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h1 style="margin: 0;">Aktif İlanlar</h1>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'ilan_olustur' %}" class="btn-primary" style="text-decoration: none; padding: 10px 25px;">+ İlan Ver</a>
-                {% endif %}
-            </div>
+    {% endblock %}
+</main>
 
-            <div class="search-section">
-                <form action="{% url 'home' %}" method="GET" class="search-form">
-                    <div class="search-input-group">
-                        <input type="text" name="q" placeholder="Ders, etkinlik veya arkadaş ara..." value="{{ query|default:'' }}">
-                        <button type="submit" class="search-btn">Ara</button>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="ads-grid">
-                {% for ilan in ilanlar %}
-                    <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration: none; color: inherit; display: block;">
-                        <div class="ad-card">
-                            <span class="category-tag" style="background-color: {{ ilan.category.color }}">
-                                {{ ilan.category.name }}
-                            </span>
-                            <h3>{{ ilan.title }}</h3>
-                            <p>{{ ilan.description|truncatewords:15 }}</p>
-                            <div class="ad-info">
-                                <span>👤 {{ ilan.owner.username }}</span>
-                                <span>📅 {{ ilan.created_at|date:"d M" }}</span>
-                            </div>
-                        </div>
-                    </a> 
-                {% empty %}
-                    <div class="no-ads">
-                        <p>Aradığınız kriterlere uygun ilan bulunamadı veya henüz ilan paylaşılmamış.</p>
-                        <a href="{% url 'home' %}" style="color: #5d3ebc;">Tüm ilanları gör</a>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endblock %}
-    </main>
 </body>
 </html>

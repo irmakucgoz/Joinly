@@ -3,45 +3,41 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ diger_kullanici.first_name }} ile Konuşma — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
 
-<nav>
-    <a href="{% url 'gelen_kutusu' %}">← Mesajlar</a>
-    <a href="{% url 'home' %}">Ana Sayfa</a>
-    <a href="{% url 'logout' %}">Çıkış</a>
+<nav class="navbar">
+    <a href="{% url 'home' %}" class="navbar-logo">
+        Joinly<span class="navbar-logo-dot"></span>
+    </a>
+    <div class="navbar-links">
+        <a href="{% url 'gelen_kutusu' %}" class="navbar-link">← Mesajlar</a>
+        <a href="{% url 'home' %}" class="navbar-link">Ana Sayfa</a>
+        <a href="{% url 'logout' %}" class="navbar-btn-danger">Çıkış</a>
+    </div>
 </nav>
 
-{% if messages %}
-    <div style="padding: 10px 20px;">
-        {% for message in messages %}
-            <div style="padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;
-                        background: {% if 'error' in message.tags %}#ffe0e0{% else %}#e8f5e9{% endif %};
-                        color: {% if 'error' in message.tags %}#c62828{% else %}#2e7d32{% endif %};">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
+<div class="chat-wrap">
 
-<div class="container">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
 
     <!-- Konuşma başlığı -->
     <div class="konusma-header">
         <div class="avatar buyuk">{{ diger_kullanici.first_name|first }}</div>
         <div>
             <h2>
-                <!-- İsme tıklayınca profiline git -->
-                <a href="{% url 'kullanici_profil' diger_kullanici.id %}"
-                   style="text-decoration: none; color: inherit;">
+                <a href="{% url 'kullanici_profil' diger_kullanici.id %}">
                     {{ diger_kullanici.first_name }} {{ diger_kullanici.last_name }}
                 </a>
                 <span class="guven-rozeti-kucuk">⭐ {{ diger_kullanici.average_rating|default:"0" }}</span>
             </h2>
             <p class="konusma-ilan-adi">
-                İlan: <a href="{% url 'ilan_detay' ilan.id %}">{{ ilan.title }}</a>
+                📌 <a href="{% url 'ilan_detay' ilan.id %}">{{ ilan.title }}</a>
             </p>
         </div>
     </div>
@@ -49,7 +45,6 @@
     <!-- Mesaj baloncukları -->
     <div class="mesaj-baloncuklari" id="mesajlar">
         {% for mesaj in konusma_mesajlari %}
-            {# Django template'de 'user' = request.user (context_processor) #}
             <div class="balon {% if mesaj.sender == user %}benim{% else %}karsi{% endif %}">
                 <div class="balon-icerik">{{ mesaj.content }}</div>
                 <div class="balon-zaman">{{ mesaj.sent_at|date:"d M, H:i" }}</div>
@@ -59,48 +54,49 @@
         {% endfor %}
     </div>
 
-    <!-- PUANLAMA FORMU -->
-    <div class="puanlama-alani">
-        <span class="puanlama-baslik">🌟 Bu kişiyle deneyimin nasıldı? Puanla:</span>
-        <form action="{% url 'kullanici_puanla' diger_kullanici.id %}" method="post" class="puanlama-formu">
-            {% csrf_token %}
-            <!-- Puanlama sonrası bu konuşma sayfasına geri dön -->
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <select name="rating" required>
-                <option value="5">⭐⭐⭐⭐⭐ — Harika</option>
-                <option value="4">⭐⭐⭐⭐ — İyi</option>
-                <option value="3">⭐⭐⭐ — Orta</option>
-                <option value="2">⭐⭐ — Kötü</option>
-                <option value="1">⭐ — Çok Kötü</option>
-            </select>
-            <input type="text" name="comment" placeholder="Kısa bir yorum (isteğe bağlı)...">
-            <button type="submit" class="btn-puanla">Puanla</button>
-        </form>
-    </div>
+    <div class="chat-footer">
+        <!-- Puanlama formu -->
+        <div class="puanlama-alani">
+            <span class="puanlama-baslik">🌟 Bu kişiyle deneyimin nasıldı?</span>
+            <form action="{% url 'kullanici_puanla' diger_kullanici.id %}" method="post" class="puanlama-formu">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <select name="rating" required>
+                    <option value="5">⭐⭐⭐⭐⭐ — Harika</option>
+                    <option value="4">⭐⭐⭐⭐ — İyi</option>
+                    <option value="3">⭐⭐⭐ — Orta</option>
+                    <option value="2">⭐⭐ — Kötü</option>
+                    <option value="1">⭐ — Çok Kötü</option>
+                </select>
+                <input type="text" name="comment" placeholder="Kısa bir yorum (isteğe bağlı)…">
+                <button type="submit" class="btn-puanla">Puanla</button>
+            </form>
+        </div>
 
-    <!-- Yeni mesaj gönderme formu -->
-    <div class="mesaj-yazma-alani">
-        <form method="post" id="mesaj-form">
-            {% csrf_token %}
-            <div class="mesaj-input-satiri">
-                <textarea
-                    name="icerik"
-                    id="icerik"
-                    rows="2"
-                    placeholder="Mesajını yaz..."
-                    class="form-control"
-                    required
-                ></textarea>
-                <button type="submit" class="btn btn-primary">Gönder ➤</button>
-            </div>
-        </form>
+        <!-- Mesaj yazma -->
+        <div class="mesaj-yazma-alani">
+            <form method="post" id="mesaj-form">
+                {% csrf_token %}
+                <div class="mesaj-input-satiri">
+                    <textarea
+                        name="icerik"
+                        id="icerik"
+                        rows="2"
+                        placeholder="Mesajını yaz… (Enter ile gönder)"
+                        class="form-control"
+                        required
+                    ></textarea>
+                    <button type="submit" class="btn btn-primary">Gönder ➤</button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </div>
 
 <script>
     const mesajlar = document.getElementById('mesajlar');
-    mesajlar.scrollTop = mesajlar.scrollHeight;
+    if (mesajlar) mesajlar.scrollTop = mesajlar.scrollHeight;
 
     document.getElementById('icerik').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {

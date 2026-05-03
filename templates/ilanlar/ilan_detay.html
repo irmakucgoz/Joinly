@@ -10,93 +10,98 @@
 <body>
 
 <nav class="navbar">
-    <a class="logo" href="{% url 'home' %}">Joinly</a>
-    <div class="nav-links">
-        <a href="{% url 'home' %}">← Ana Sayfa</a>
+    <a href="{% url 'home' %}" class="navbar-logo">
+        Joinly<span class="navbar-logo-dot"></span>
+    </a>
+    <div class="navbar-links">
+        <a href="{% url 'home' %}" class="navbar-link">← Ana Sayfa</a>
         {% if user.is_authenticated %}
-            <a href="{% url 'gelen_kutusu' %}">📬 Mesajlar</a>
-            <a href="{% url 'profil' %}">Profilim</a>
-            <a href="{% url 'logout' %}">Çıkış</a>
+            <a href="{% url 'gelen_kutusu' %}" class="navbar-link" style="position:relative;">
+                📬 Mesajlar
+            </a>
+            <a href="{% url 'profil' %}" class="navbar-link">Profilim</a>
+            <a href="{% url 'logout' %}" class="navbar-btn-danger">Çıkış</a>
         {% else %}
-            <a href="{% url 'login' %}">Giriş</a>
+            <a href="{% url 'login' %}" class="navbar-btn-outline">Giriş Yap</a>
+            <a href="{% url 'register' %}" class="navbar-btn-primary">Kayıt Ol</a>
         {% endif %}
     </div>
 </nav>
 
-<div class="container">
+<div class="container-narrow">
 
     {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %}
 
-    <div class="ilan-detay-card">
+    <div class="ilan-detay-wrap">
+        <div class="ilan-detay-card">
 
-        {% if ilan.category %}
-            <span class="kategori-badge" style="background: {{ ilan.category.color }}">
-                {{ ilan.category.name }}
-            </span>
-        {% endif %}
+            <!-- Üst alan -->
+            <div class="ilan-detay-header">
+                {% if ilan.category %}
+                    <span class="kategori-badge" style="background:{{ ilan.category.color }}">
+                        {{ ilan.category.name }}
+                    </span>
+                {% endif %}
 
-        <h1 class="ilan-baslik">{{ ilan.title }}</h1>
+                <h1 class="ilan-baslik">{{ ilan.title }}</h1>
 
-        <div class="ilan-meta">
-            <span>📍 {{ ilan.location }}</span>
-            <span>
-                👤
-                <!-- İlan sahibinin adına tıklayınca profil sayfasına git -->
-                <a href="{% url 'kullanici_profil' ilan.owner.id %}"
-                   style="color: #5d3ebc; text-decoration: none; font-weight: 500;">
-                    {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}
-                </a>
-                <!-- Güven skoru rozeti -->
-                <span style="font-size: 0.8rem; color: #ffc107; background: #fff9e6;
-                             padding: 1px 7px; border-radius: 10px; margin-left: 4px;">
-                    ⭐ {{ ilan.owner.average_rating|default:"0" }}
-                </span>
-            </span>
-            <span>🕒 {{ ilan.created_at|date:"d F Y" }}</span>
-        </div>
-
-        <hr class="ilan-ayrac">
-
-        <div class="ilan-aciklama">
-            <p>{{ ilan.description }}</p>
-        </div>
-
-        <hr class="ilan-ayrac">
-
-        <!-- Aksiyon Alanı -->
-        {% if user.is_authenticated %}
-            {% if ilan.owner == user %}
-                <div class="ilan-aksiyonlar">
-                    <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn btn-secondary">✏️ Düzenle</a>
-                    <a href="{% url 'ilan_sil' ilan.id %}" class="btn btn-danger">🗑️ Sil</a>
+                <div class="ilan-meta">
+                    {% if ilan.location %}
+                        <span class="ilan-meta-chip">📍 {{ ilan.location }}</span>
+                    {% endif %}
+                    <span class="ilan-meta-chip">
+                        👤
+                        <a href="{% url 'kullanici_profil' ilan.owner.id %}">
+                            {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}
+                        </a>
+                        <span class="guven-rozeti-kucuk" style="margin-left:4px;">⭐ {{ ilan.owner.average_rating|default:"0" }}</span>
+                    </span>
+                    <span class="ilan-meta-chip">🕒 {{ ilan.created_at|date:"d F Y" }}</span>
                 </div>
-            {% else %}
-                <div class="mesaj-formu">
-                    <h3>📨 {{ ilan.owner.first_name }} ile İletişime Geç</h3>
-                    <form method="post" action="{% url 'mesaj_gonder' ilan.id %}">
-                        {% csrf_token %}
-                        <textarea
-                            name="icerik"
-                            rows="4"
-                            placeholder="Merhaba, ilanınla ilgili sormak istediğim bir şey var..."
-                            class="form-control"
-                            required
-                        ></textarea>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            Mesajı Gönder
-                        </button>
-                    </form>
-                </div>
-            {% endif %}
-        {% else %}
-            <p class="giris-uyarisi">
-                Mesaj göndermek için <a href="{% url 'login' %}">giriş yap</a>.
-            </p>
-        {% endif %}
+            </div>
 
+            <!-- Gövde -->
+            <div class="ilan-detay-body">
+                <div class="ilan-aciklama">{{ ilan.description }}</div>
+
+                <hr class="ilan-ayrac">
+
+                {% if user.is_authenticated %}
+                    {% if ilan.owner == user %}
+                        <div class="ilan-aksiyonlar">
+                            <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn btn-secondary">✏️ Düzenle</a>
+                            <a href="{% url 'ilan_sil' ilan.id %}" class="btn btn-danger">🗑️ Sil</a>
+                        </div>
+                    {% else %}
+                        <div class="mesaj-formu">
+                            <h3>📨 {{ ilan.owner.first_name }} ile İletişime Geç</h3>
+                            <form method="post" action="{% url 'mesaj_gonder' ilan.id %}">
+                                {% csrf_token %}
+                                <textarea
+                                    name="icerik"
+                                    rows="4"
+                                    placeholder="Merhaba, ilanınla ilgili sormak istediğim bir şey var…"
+                                    class="form-control"
+                                    required
+                                ></textarea>
+                                <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
+                                    Mesajı Gönder
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="giris-uyarisi">
+                        Mesaj göndermek için <a href="{% url 'login' %}">giriş yap</a>.
+                    </p>
+                {% endif %}
+            </div>
+
+        </div>
     </div>
+
 </div>
 
 </body>
