@@ -41,12 +41,36 @@
             <div class="home-hero-eyebrow">✦ Türkiye'nin Networking Platformu</div>
             <h1>Birlikte daha fazlasını başar</h1>
             <p>Ders al, etkinliklere katıl, yeni insanlarla tanış. Joinly ile doğru kişiye ulaşmak hiç bu kadar kolay olmamıştı.</p>
+            
+            <!-- Arama ve Filtreleme Formu -->
             <form action="{% url 'home' %}" method="GET">
                 <div class="hero-search">
                     <input type="text" name="q" placeholder="Ders, etkinlik veya arkadaş ara…" value="{{ query|default:'' }}" autocomplete="off">
                     <button type="submit">Ara →</button>
                 </div>
+                
+                <!-- YENİ EKLENEN: Alt Filtre Satırı -->
+                <div class="hero-filters">
+                    <select name="kategori" class="filter-dropdown">
+                        <option value="">Tüm Kategoriler</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if secili_kategori == cat.id|stringformat:"s" %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="text" name="konum" class="filter-input-small" placeholder="Konum (Örn: İstanbul, Budapeşte)" value="{{ secili_konum|default:'' }}">
+
+                    <select name="siralama" class="filter-dropdown">
+                        <option value="yeni" {% if secili_siralama == 'yeni' %}selected{% endif %}>En Yeni</option>
+                        <option value="eski" {% if secili_siralama == 'eski' %}selected{% endif %}>En Eski</option>
+                        <option value="a_z" {% if secili_siralama == 'a_z' %}selected{% endif %}>A'dan Z'ye</option>
+                        <option value="z_a" {% if secili_siralama == 'z_a' %}selected{% endif %}>Z'den A'ya</option>
+                    </select>
+                </div>
             </form>
+            
         </div>
     </div>
 

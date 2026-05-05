@@ -9,9 +9,13 @@ from .forms import AdvertisementForm
 def home(request):
     query      = request.GET.get('q', '').strip()
     kategori   = request.GET.get('kategori', '')
+    konum      = request.GET.get('konum', '').strip()
+    siralama   = request.GET.get('siralama', 'yeni')
+    
     categories = Category.objects.all()
 
-    ilanlar = Advertisement.objects.select_related('owner', 'category').order_by('-created_at')
+    # Sıralamayı aşağıda dinamik yapacağımız için buradaki order_by'ı kaldırdık
+    ilanlar = Advertisement.objects.select_related('owner', 'category')
 
     if query:
         ilanlar = ilanlar.filter(
@@ -21,11 +25,27 @@ def home(request):
     if kategori:
         ilanlar = ilanlar.filter(category__id=kategori)
 
+    if konum:
+        ilanlar = ilanlar.filter(location__icontains=konum)
+
+    # Sıralama mantığı
+    if siralama == 'eski':
+        ilanlar = ilanlar.order_by('created_at')
+    elif siralama == 'a_z':
+        ilanlar = ilanlar.order_by('title')
+    elif siralama == 'z_a':
+        ilanlar = ilanlar.order_by('-title')
+    else:
+        # Varsayılan: En yeni
+        ilanlar = ilanlar.order_by('-created_at')
+
     context = {
         'ilanlar'        : ilanlar,
         'query'          : query,
         'categories'     : categories,
         'secili_kategori': kategori,
+        'secili_konum'   : konum,
+        'secili_siralama': siralama,
     }
     return render(request, 'index.html', context)
 

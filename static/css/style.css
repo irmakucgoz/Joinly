@@ -1582,3 +1582,88 @@ img { display: block; max-width: 100%; }
   .hero-search button { padding: 14px; border-radius: 0 0 var(--r-lg) var(--r-lg); }
   .ads-grid { gap: 12px; }
 }
+/* ── FİLTRELEME ALANI KESİN ÇÖZÜM ───────────────────────── */
+
+/* 1. Formu dikey hizalayıp arama çubuğu ile filtrelerin arasını açıyoruz */
+.home-hero form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* Arama çubuğu ile filtreler arasındaki nefes boşluğu */
+}
+
+/* 2. Filtreleri yan yana, şık bir şekilde diziyoruz */
+.hero-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+    justify-content: flex-start; /* Arama çubuğunun sol kenarıyla hizalar */
+}
+
+/* 3. Dropdown ve Input için "Hap (Pill)" tasarımı */
+.hero-filters .filter-dropdown,
+.hero-filters .filter-input-small {
+    /* Tarayıcının varsayılan çirkin tasarımını zorla siliyoruz */
+    -webkit-appearance: none;
+    appearance: none; 
+    
+    background-color: #ffffff; /* Arama çubuğuyla aynı saf beyaz */
+    color: var(--ink-2); /* Koyu şık metin rengin */
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    
+    border: 2px solid transparent;
+    border-radius: 40px; /* Tam yuvarlak hap görünümü */
+    padding: 12px 24px;
+    outline: none;
+    
+    /* Mor arka planda çok hafif, zarif bir gölge */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+    transition: all 0.2s ease;
+    
+    /* Öğelerin gereksiz uzamasını engelliyoruz */
+    flex: 0 1 auto; 
+}
+
+/* 4. Select kutusu (Kategori/Sıralama) için özel ok işareti */
+.hero-filters .filter-dropdown {
+    cursor: pointer;
+    padding-right: 40px; /* Ok işaretine yer açıyoruz */
+    /* Senin ink-3 renginde zarif bir vektörel ok */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23514e6a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+}
+
+/* Input içindeki açıklama yazısı (Placeholder) */
+.hero-filters .filter-input-small::placeholder {
+    color: var(--ink-4);
+    font-weight: 400;
+}
+
+/* 5. Üzerine gelindiğinde veya tıklandığında (Hover & Focus) */
+.hero-filters .filter-dropdown:hover,
+.hero-filters .filter-input-small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.hero-filters .filter-dropdown:focus,
+.hero-filters .filter-input-small:focus {
+    /* Tıklanınca etrafında hafif saydam beyaz bir hale oluşur */
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.25);
+}
+
+/* 6. Telefon (Mobil) Ekran Uyumu */
+@media (max-width: 600px) {
+    .hero-filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .hero-filters .filter-dropdown,
+    .hero-filters .filter-input-small {
+        width: 100%;
+    }
+}
