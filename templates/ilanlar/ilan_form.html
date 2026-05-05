@@ -6,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ baslik|default:"İlan Oluştur" }} — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    /* Haritanın form içinde şık durması için ufak bir stil dokunuşu */
+    <style>
+        .map-container {
+            width: 100%;
+            height: 250px;
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-default, #dbd7ef);
+            display: none; /* İlk başta gizli, konum yazılınca açılacak */
+        }
+    </style>
 </head>
 <body>
 
@@ -34,8 +47,13 @@
         <form method="POST">
             {% csrf_token %}
             <div style="text-align:left;">
+                <!-- Django form alanları (Gizli koordinat inputları dahil) -->
                 {{ form.as_p }}
+                
+                <!-- Google Harita'nın görüneceği Div -->
+                <div id="map" class="map-container"></div>
             </div>
+            
             <button type="submit" class="btn-auth" style="margin-top:16px;">
                 İlanı Yayınla
             </button>
@@ -46,6 +64,100 @@
         </div>
     </div>
 </div>
+
+<!-- ========================================== -->
+<!-- GOOGLE MAPS API VE OTOMATİK TAMAMLAMA KODU -->
+<!-- ========================================== -->
+
+<!-- NOT: "YOUR_API_KEY" yazan yere kendi Google Maps API anahtarını gireceğiz -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIzB4ckRd-THJthpgv0O19K3PDFb74yV4&libraries=places&callback=initMap" async defer></script>
+
+<script>
+    function initMap() {
+        const input = document.getElementById('map-search-input');
+        const mapDiv = document.getElementById('map');
+        const latInput = document.getElementById('id_latitude');
+        const lngInput = document.getElementById('id_longitude');
+
+        // Varsayılan merkez: Galatasaray Üniversitesi / İstanbul
+        const defaultLocation = { lat: 41.0458, lng: 29.0205 };
+
+        // Haritayı oluşturuyoruz
+        const map = new google.maps.Map(mapDiv, {
+            center: defaultLocation,
+            zoom: 14,
+            mapTypeControl: false,
+            streetViewControl: false,
+        });
+
+        // Sürüklenebilir kırmızı pinimizi oluşturuyoruz
+        const marker = new google.maps.Marker({
+            map: map,
+            position: defaultLocation,
+            draggable: true, 
+            animation: google.maps.Animation.DROP,
+        });
+
+        // Arama kutusuna Google Autocomplete özelliğini bağlıyoruz
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        autocomplete.bindTo('bounds', map);
+
+        // Kullanıcı arama kutusundan bir yer seçtiğinde tetiklenir
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            
+            if (!place.geometry) {
+                window.alert("Bu yer için detaylı konum bulunamadı: '" + place.name + "'");
+                return;
+            }
+
+            // Haritayı görünür yapıyoruz
+            mapDiv.style.display = 'block';
+            google.maps.event.trigger(map, 'resize');
+
+            // Haritayı seçilen yere odakla
+            if (place.geometry.viewport) {
+                map.fitBounds(place.geometry.viewport);
+            } else {
+                map.setCenter(place.geometry.location);
+                map.setZoom(17);
+            }
+
+            // Pini taşı
+            marker.setPosition(place.geometry.location);
+
+            // GİZLİ INPUTLARI DOLDUR (Veritabanına gidecek olan veriler)
+            latInput.value = place.geometry.location.lat();
+            lngInput.value = place.geometry.location.lng();
+        });
+
+        // Kullanıcı pini fareyle tutup sürüklediğinde koordinatları güncelle
+        marker.addListener('dragend', function() {
+            const position = marker.getPosition();
+            
+            // Gizli inputları yeni koordinatla güncelle
+            latInput.value = position.lat();
+            lngInput.value = position.lng();
+
+            // Sürüklenen yeni yerin adresini metin kutusuna yazdır (Ters Kodlama / Reverse Geocoding)
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: position }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    input.value = results[0].formatted_address;
+                }
+            });
+        });
+        
+        // Kullanıcı konum kutusuna tıklarsa haritayı baştan göster (Eğer daha önce gizliyse)
+        input.addEventListener('focus', function() {
+            if(mapDiv.style.display === 'none' || mapDiv.style.display === '') {
+                mapDiv.style.display = 'block';
+                google.maps.event.trigger(map, 'resize');
+                map.setCenter(marker.getPosition());
+            }
+        });
+    }
+</script>
 
 </body>
 </html>

@@ -17,6 +17,11 @@ class Advertisement(models.Model):
     title       = models.CharField(max_length=200, verbose_name='İlan Başlığı')
     description = models.TextField(verbose_name='Açıklama')
     location    = models.CharField(max_length=100, verbose_name='Konum')
+    
+    # ── HARİTA İÇİN EKLENEN KOORDİNAT ALANLARI ──
+    latitude    = models.FloatField(verbose_name='Enlem', null=True, blank=True)
+    longitude   = models.FloatField(verbose_name='Boylam', null=True, blank=True)
+    
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi')
 
     def __str__(self):
@@ -41,9 +46,7 @@ class Review(models.Model):
     created_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Bir kişi bir kullanıcıyı sadece bir kez puanlayabilsin (Matematiksel tutarlılık)
         unique_together = ('reviewer', 'target_user')
-        # Yorumları her zaman en yeni olandan en eskiye doğru sıralarız
         ordering = ['-created_at']
 
     def __str__(self):

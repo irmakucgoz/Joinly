@@ -6,6 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Joinly — Birlikte Daha İyi</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Harita için eklediğimiz özel stiller -->
+    <style>
+        .home-map-container {
+            width: 100%;
+            height: 350px;
+            border-radius: var(--r-md, 12px);
+            margin: 20px 0 30px 0;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-subtle);
+            overflow: hidden;
+            position: relative;
+        }
+        /* Harita üzerindeki bilgi penceresi (InfoWindow) tasarımı */
+        .map-info-window {
+            padding: 5px;
+            text-align: center;
+        }
+        .map-info-window h4 {
+            margin: 0 0 8px 0;
+            color: var(--brand);
+            font-size: 14px;
+        }
+        .map-info-window a {
+            display: inline-block;
+            background: var(--brand);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
@@ -49,7 +83,7 @@
                     <button type="submit">Ara →</button>
                 </div>
                 
-                <!-- YENİ EKLENEN: Alt Filtre Satırı -->
+                <!-- Alt Filtre Satırı -->
                 <div class="hero-filters">
                     <select name="kategori" class="filter-dropdown">
                         <option value="">Tüm Kategoriler</option>
@@ -60,7 +94,8 @@
                         {% endfor %}
                     </select>
 
-                    <input type="text" name="konum" class="filter-input-small" placeholder="Konum (Örn: İstanbul, Budapeşte)" value="{{ secili_konum|default:'' }}">
+                    <!-- Otomatik tamamlama için id'sini değiştirdik -->
+                    <input type="text" name="konum" id="home-map-search" class="filter-input-small" placeholder="Konum (Örn: İstanbul, Budapeşte)" value="{{ secili_konum|default:'' }}">
 
                     <select name="siralama" class="filter-dropdown">
                         <option value="yeni" {% if secili_siralama == 'yeni' %}selected{% endif %}>En Yeni</option>
@@ -79,14 +114,22 @@
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %}
 
-    <!-- İlan Listesi -->
+    <!-- YENİ EKLENEN: İlan Haritası -->
     <div class="section-header">
-        <h2>Aktif İlanlar</h2>
+        <h2>Yakındaki İlanlar</h2>
+    </div>
+    <!-- Haritanın içine çizileceği alan -->
+    <div id="home-map" class="home-map-container"></div>
+
+    <!-- İlan Listesi Başlığı -->
+    <div class="section-header" style="margin-top: 20px;">
+        <h2>Aktif İlanlar Listesi</h2>
         {% if user.is_authenticated %}
             <a href="{% url 'ilan_olustur' %}" class="btn btn-primary">+ Yeni İlan</a>
         {% endif %}
     </div>
 
+    <!-- İlan Listesi (Grid) -->
     <div class="ads-grid">
         {% for ilan in ilanlar %}
             <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration:none;color:inherit;display:block;">
@@ -118,6 +161,98 @@
 
     {% endblock %}
 </main>
+
+<!-- ========================================== -->
+<!-- DJANGO VERİSİNİ JAVASCRIPT'E AKTARMA ALANI -->
+<!-- ========================================== -->
+<!-- Tüm ilanların koordinatlarını güvenli bir JSON olarak JS'ye okutuyoruz -->
+<script>
+    const ilanlarData = [
+        {% for ilan in ilanlar %}
+            {% if ilan.latitude and ilan.longitude %}
+            {
+                id: "{{ ilan.id }}",
+                title: "{{ ilan.title|escapejs }}",
+                lat: {{ ilan.latitude|stringformat:"f" }},
+                lng: {{ ilan.longitude|stringformat:"f" }},
+                url: "{% url 'ilan_detay' ilan.id %}"
+            },
+            {% endif %}
+        {% endfor %}
+    ];
+</script>
+
+<!-- ========================================== -->
+<!-- GOOGLE MAPS API: ANA SAYFA HARİTASI        -->
+<!-- ========================================== -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIzB4ckRd-THJthpgv0O19K3PDFb74yV4&libraries=places&callback=initHomeMap" async defer></script>
+
+<script>
+    function initHomeMap() {
+        // Varsayılan Merkez: GSÜ İstanbul (veya Budapeşte, sen seçebilirsin)
+        const defaultCenter = { lat: 41.0458, lng: 29.0205 };
+        
+        // Haritayı oluştur
+        const map = new google.maps.Map(document.getElementById('home-map'), {
+            center: defaultCenter,
+            zoom: 12, // Geniş açı
+            mapTypeControl: false,
+            streetViewControl: false,
+        });
+
+        // 1. İLAN PİNLERİNİ YERLEŞTİRME
+        // Veritabanından gelen ilanlarData dizisini dönüyoruz
+        const infoWindow = new google.maps.InfoWindow(); // Tıklanınca açılacak kutucuk
+        const bounds = new google.maps.LatLngBounds();   // Harita zoomunu pinlere göre ayarlayacak sınır
+
+        let pinEklendi = false;
+
+        ilanlarData.forEach(function(ilan) {
+            const position = { lat: ilan.lat, lng: ilan.lng };
+            
+            const marker = new google.maps.Marker({
+                position: position,
+                map: map,
+                title: ilan.title,
+                animation: google.maps.Animation.DROP
+            });
+
+            // Pine tıklandığında şık bir kutu açılsın
+            marker.addListener('click', function() {
+                const contentStr = `
+                    <div class="map-info-window">
+                        <h4>${ilan.title}</h4>
+                        <a href="${ilan.url}">İlanı İncele</a>
+                    </div>
+                `;
+                infoWindow.setContent(contentStr);
+                infoWindow.open(map, marker);
+            });
+
+            // Eklenen pinin koordinatını sınırlara dahil et
+            bounds.extend(position);
+            pinEklendi = true;
+        });
+
+        // Eğer haritada en az 1 pin varsa, harita zoomunu tüm pinleri gösterecek şekilde ayarla
+        if (pinEklendi) {
+            map.fitBounds(bounds);
+        }
+
+        // 2. FİLTRE KUTUSUNA OTOMATİK TAMAMLAMA (AUTOCOMPLETE) EKLENMESİ
+        const searchInput = document.getElementById('home-map-search');
+        const autocomplete = new google.maps.places.Autocomplete(searchInput);
+        
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry && place.geometry.location) {
+                // Kullanıcı "Budapeşte" yazıp seçtiğinde harita anında oraya uçar
+                map.setCenter(place.geometry.location);
+                map.setZoom(13);
+            }
+        });
+    }
+</script>
 
 </body>
 </html>

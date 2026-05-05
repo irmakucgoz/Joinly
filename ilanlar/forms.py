@@ -4,8 +4,8 @@ from .models import Advertisement
 class AdvertisementForm(forms.ModelForm):
     class Meta:
         model = Advertisement
-        # Kullanıcının dolduracağı alanlar
-        fields = ['title', 'category', 'description', 'location']
+        # Harita koordinatları için latitude ve longitude alanlarını da forma dahil ettik
+        fields = ['title', 'category', 'description', 'location', 'latitude', 'longitude']
         
         # TASARIM BURADA BAŞLIYOR: Her kutuya o 'form-control' stilini veriyoruz
         widgets = {
@@ -23,6 +23,11 @@ class AdvertisementForm(forms.ModelForm):
             }),
             'location': forms.TextInput(attrs={
                 'class': 'form-control', 
-                'placeholder': 'Örn: GSÜ Kütüphanesi veya Online'
+                'placeholder': 'Örn: Haritadan seçin veya adres yazın...',
+                'id': 'map-search-input' # Google Haritalar API'si (Autocomplete) bu ID'yi kullanacak
             }),
+            # Kullanıcı enlem ve boylamı elle girmeyecek, haritadan otomatik gelecek
+            # Bu yüzden bunları formda görünmez yapıyoruz.
+            'latitude': forms.HiddenInput(attrs={'id': 'id_latitude'}),
+            'longitude': forms.HiddenInput(attrs={'id': 'id_longitude'}),
         }
