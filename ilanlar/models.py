@@ -51,3 +51,26 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.reviewer} → {self.target_user} ({self.rating}/5)'
+
+
+# ─────────────────────────────────────────
+# YENİ: FAVORİLEME MODELİ
+# ─────────────────────────────────────────
+
+class Favorite(models.Model):
+    """
+    Kullanıcının bir ilanı kaydetmesini temsil eder.
+    Her (user, ad) çifti benzersizdir — aynı ilan iki kez kaydedilemez.
+    """
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoriler')
+    ad         = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name='favoriler')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'ad')
+        ordering        = ['-created_at']
+        verbose_name        = 'Favori'
+        verbose_name_plural = 'Favoriler'
+
+    def __str__(self):
+        return f'{self.user.username} ♥ {self.ad.title}'

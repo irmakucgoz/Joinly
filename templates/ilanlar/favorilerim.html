@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorilerim — Joinly</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .favoriler-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 32px 0 20px 0;
+        }
+        .favoriler-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-main, #1a1a2e);
+        }
+        .favori-sayac {
+            font-size: 14px;
+            color: #888;
+            background: #f4f4f8;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .favoriler-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding-bottom: 40px;
+        }
+        .favori-kart {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e8e8ef;
+            padding: 20px;
+            position: relative;
+            transition: box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .favori-kart:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+            transform: translateY(-2px);
+        }
+        .favori-kart-kategori {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+        .favori-kart h3 {
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #1a1a2e;
+        }
+        .favori-kart p {
+            font-size: 14px;
+            color: #666;
+            margin: 0 0 14px 0;
+            line-height: 1.5;
+        }
+        .favori-kart-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+        }
+        .favori-cikar-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s, transform 0.2s;
+            line-height: 1;
+        }
+        .favori-cikar-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        .bos-durum {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .bos-durum .bos-ikon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+        .bos-durum h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .bos-durum p {
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="{% url 'home' %}" class="navbar-logo">
+        Joinly<span class="navbar-logo-dot"></span>
+    </a>
+    <div class="navbar-links">
+        <a href="{% url 'home' %}" class="navbar-link">← Ana Sayfa</a>
+        <a href="{% url 'gelen_kutusu' %}" class="navbar-link">📬 Mesajlar</a>
+        <a href="{% url 'favorilerim' %}" class="navbar-link">❤️ Favorilerim</a>
+        <a href="{% url 'profil' %}" class="navbar-link">Profilim</a>
+        <a href="{% url 'logout' %}" class="navbar-btn-danger">Çıkış</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+
+    <div class="favoriler-header">
+        <h1>❤️ Favorilerim</h1>
+        <span class="favori-sayac">{{ favori_kayitlar|length }} ilan kaydedildi</span>
+    </div>
+
+    {% if favori_kayitlar %}
+        <div class="favoriler-grid">
+            {% for kayit in favori_kayitlar %}
+                <div class="favori-kart-wrap" id="favori-wrap-{{ kayit.ad.id }}">
+                    <!-- Favoriden çıkar butonu -->
+                    <form method="post" action="{% url 'favori_toggle' kayit.ad.id %}" style="display:contents;">
+                        {% csrf_token %}
+                        <button
+                            type="submit"
+                            class="favori-cikar-btn"
+                            title="Favorilerden çıkar"
+                            onclick="return cikarOnay(event, {{ kayit.ad.id }})"
+                        >❤️</button>
+                    </form>
+
+                    <a href="{% url 'ilan_detay' kayit.ad.id %}" class="favori-kart">
+                        {% if kayit.ad.category %}
+                            <span class="favori-kart-kategori" style="background:{{ kayit.ad.category.color }}">
+                                {{ kayit.ad.category.name }}
+                            </span>
+                        {% endif %}
+
+                        <h3>{{ kayit.ad.title }}</h3>
+                        <p>{{ kayit.ad.description|truncatewords:18 }}</p>
+
+                        <div class="favori-kart-meta">
+                            <span>👤 {{ kayit.ad.owner.first_name }} {{ kayit.ad.owner.last_name }}</span>
+                            <span>📍 {{ kayit.ad.location }}</span>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bos-durum">
+            <div class="bos-ikon">🤍</div>
+            <h2>Henüz favori ilan eklemediniz</h2>
+            <p>Beğendiğin ilanlardaki ❤️ butonuna tıklayarak onları buraya kaydedebilirsin.</p>
+            <a href="{% url 'home' %}" class="btn btn-primary">İlanlara Göz At</a>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function cikarOnay(event, ilanId) {
+        event.preventDefault();
+        if (!confirm('Bu ilanı favorilerden çıkarmak istediğinize emin misiniz?')) return false;
+
+        // AJAX ile çıkar
+        fetch(`/ilan/${ilanId}/favori/`, {
+            method : 'POST',
+            headers: {
+                'X-CSRFToken'     : getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.is_favori) {
+                // Kartı sayfadan kaldır
+                const wrap = document.getElementById(`favori-wrap-${ilanId}`);
+                if (wrap) {
+                    wrap.style.transition = 'opacity 0.3s, transform 0.3s';
+                    wrap.style.opacity    = '0';
+                    wrap.style.transform  = 'scale(0.95)';
+                    setTimeout(() => wrap.remove(), 300);
+                }
+            }
+        })
+        .catch(() => {
+            // AJAX başarısız olursa formu normal gönder
+            event.target.closest('form').submit();
+        });
+
+        return false;
+    }
+</script>
+
+</body>
+</html>

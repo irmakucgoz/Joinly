@@ -39,6 +39,32 @@
             font-size: 12px;
             font-weight: bold;
         }
+        /* ── İLAN KARTI FAVORİ BUTONU ── */
+        .ad-card-wrap {
+            position: relative;
+        }
+        .kart-favori-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.92);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            transition: transform 0.18s, box-shadow 0.18s;
+            z-index: 2;
+        }
+        .kart-favori-btn:hover {
+            transform: scale(1.18);
+            box-shadow: 0 4px 12px rgba(231,76,60,0.25);
+        }
     </style>
 </head>
 <body>
@@ -56,6 +82,7 @@
                     <span class="notif-badge">{{ unread_count }}</span>
                 {% endif %}
             </a>
+            <a href="{% url 'favorilerim' %}" class="navbar-link">❤️ Favorilerim</a>
             <a href="{% url 'profil' %}" class="navbar-link">Profilim</a>
             <a href="{% url 'ilan_olustur' %}" class="navbar-btn-primary">+ İlan Ver</a>
             <a href="{% url 'logout' %}" class="navbar-btn-danger">Çıkış</a>
@@ -132,21 +159,31 @@
     <!-- İlan Listesi (Grid) -->
     <div class="ads-grid">
         {% for ilan in ilanlar %}
-            <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration:none;color:inherit;display:block;">
-                <div class="ad-card">
-                    {% if ilan.category %}
-                        <span class="category-tag" style="background:{{ ilan.category.color }}">
-                            {{ ilan.category.name }}
-                        </span>
-                    {% endif %}
-                    <h3>{{ ilan.title }}</h3>
-                    <p>{{ ilan.description|truncatewords:14 }}</p>
-                    <div class="ad-info">
-                        <span>👤 {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}</span>
-                        <span>{{ ilan.created_at|date:"d M" }}</span>
+            <div class="ad-card-wrap" style="position:relative;">
+                <a href="{% url 'ilan_detay' ilan.id %}" style="text-decoration:none;color:inherit;display:block;">
+                    <div class="ad-card">
+                        {% if ilan.category %}
+                            <span class="category-tag" style="background:{{ ilan.category.color }}">
+                                {{ ilan.category.name }}
+                            </span>
+                        {% endif %}
+                        <h3>{{ ilan.title }}</h3>
+                        <p>{{ ilan.description|truncatewords:14 }}</p>
+                        <div class="ad-info">
+                            <span>👤 {{ ilan.owner.first_name }} {{ ilan.owner.last_name }}</span>
+                            <span>{{ ilan.created_at|date:"d M" }}</span>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+                {% if user.is_authenticated %}
+                    <button
+                        class="kart-favori-btn {% if ilan.id in favori_ilan_idleri %}aktif{% endif %}"
+                        data-ilan-id="{{ ilan.id }}"
+                        onclick="kartFavoriToggle(this)"
+                        title="{% if ilan.id in favori_ilan_idleri %}Favorilerden çıkar{% else %}Favorilere ekle{% endif %}"
+                    >{% if ilan.id in favori_ilan_idleri %}❤️{% else %}🤍{% endif %}</button>
+                {% endif %}
+            </div>
         {% empty %}
             <div class="no-ads">
                 <p>Henüz ilan yok veya arama kriterlerinize uygun sonuç bulunamadı.</p>
@@ -251,6 +288,42 @@
                 map.setZoom(13);
             }
         });
+    }
+</script>
+
+<!-- FAVORİ TOGGLE (ANA SAYFA KARTLARI) -->
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function kartFavoriToggle(btn) {
+        const ilanId = btn.dataset.ilanId;
+        fetch(`/ilan/${ilanId}/favori/`, {
+            method : 'POST',
+            headers: {
+                'X-CSRFToken'     : getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.textContent  = data.is_favori ? '❤️' : '🤍';
+            btn.title        = data.is_favori ? 'Favorilerden çıkar' : 'Favorilere ekle';
+            btn.classList.toggle('aktif', data.is_favori);
+        })
+        .catch(console.error);
     }
 </script>
 

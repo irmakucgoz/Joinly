@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from .models import Advertisement, Category, Message, Review
+from django.http import JsonResponse
+from .models import Advertisement, Category, Message, Review, Favorite
 from .forms import AdvertisementForm
 
 
@@ -14,7 +15,6 @@ def home(request):
     
     categories = Category.objects.all()
 
-    # Sıralamayı aşağıda dinamik yapacağımız için buradaki order_by'ı kaldırdık
     ilanlar = Advertisement.objects.select_related('owner', 'category')
 
     if query:
@@ -28,7 +28,6 @@ def home(request):
     if konum:
         ilanlar = ilanlar.filter(location__icontains=konum)
 
-    # Sıralama mantığı
     if siralama == 'eski':
         ilanlar = ilanlar.order_by('created_at')
     elif siralama == 'a_z':
@@ -36,23 +35,39 @@ def home(request):
     elif siralama == 'z_a':
         ilanlar = ilanlar.order_by('-title')
     else:
-        # Varsayılan: En yeni
         ilanlar = ilanlar.order_by('-created_at')
 
+    # Giriş yapmış kullanıcının favori ilan id'lerini bir küme olarak al
+    favori_ilan_idleri = set()
+    if request.user.is_authenticated:
+        favori_ilan_idleri = set(
+            Favorite.objects.filter(user=request.user).values_list('ad_id', flat=True)
+        )
+
     context = {
-        'ilanlar'        : ilanlar,
-        'query'          : query,
-        'categories'     : categories,
-        'secili_kategori': kategori,
-        'secili_konum'   : konum,
-        'secili_siralama': siralama,
+        'ilanlar'          : ilanlar,
+        'query'            : query,
+        'categories'       : categories,
+        'secili_kategori'  : kategori,
+        'secili_konum'     : konum,
+        'secili_siralama'  : siralama,
+        'favori_ilan_idleri': favori_ilan_idleri,
     }
     return render(request, 'index.html', context)
 
 
 def ilan_detay(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id)
-    return render(request, 'ilanlar/ilan_detay.html', {'ilan': ilan})
+
+    # Bu ilanın kullanıcının favorisinde olup olmadığını kontrol et
+    is_favori = False
+    if request.user.is_authenticated:
+        is_favori = Favorite.objects.filter(user=request.user, ad=ilan).exists()
+
+    return render(request, 'ilanlar/ilan_detay.html', {
+        'ilan': ilan,
+        'is_favori': is_favori,
+    })
 
 
 @login_required
@@ -95,6 +110,59 @@ def ilan_sil(request, ilan_id):
 
 
 # ─────────────────────────────────────────
+# YENİ: FAVORİLEME VIEW'LARI
+# ─────────────────────────────────────────
+
+@login_required
+def favori_toggle(request, ilan_id):
+    """
+    POST isteği ile ilanı favorilere ekler veya çıkarır.
+    AJAX ve normal form POST'larını destekler.
+    Durum: {'is_favori': True/False, 'favori_sayisi': int}
+    """
+    if request.method != 'POST':
+        return redirect('ilan_detay', ilan_id=ilan_id)
+
+    ilan = get_object_or_404(Advertisement, id=ilan_id)
+
+    favori, created = Favorite.objects.get_or_create(user=request.user, ad=ilan)
+
+    if not created:
+        # Zaten favorilerdeydi → çıkar
+        favori.delete()
+        is_favori = False
+    else:
+        # Yeni eklendi
+        is_favori = True
+
+    # AJAX isteği ise JSON döndür
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'is_favori'    : is_favori,
+            'favori_sayisi': ilan.favoriler.count(),
+        })
+
+    # Normal form POST ise ilan detayına geri dön
+    return redirect('ilan_detay', ilan_id=ilan_id)
+
+
+@login_required
+def favorilerim(request):
+    """
+    Giriş yapmış kullanıcının kaydettiği tüm ilanları listeler.
+    """
+    favori_kayitlar = (
+        Favorite.objects
+        .filter(user=request.user)
+        .select_related('ad', 'ad__owner', 'ad__category')
+        .order_by('-created_at')
+    )
+    return render(request, 'ilanlar/favorilerim.html', {
+        'favori_kayitlar': favori_kayitlar,
+    })
+
+
+# ─────────────────────────────────────────
 # MESAJLAŞMA VIEW'LARI
 # ─────────────────────────────────────────
 
@@ -120,7 +188,6 @@ def mesaj_gonder(request, ilan_id):
             content=icerik,
         )
         messages.success(request, f'{ilan.owner.first_name} adlı kullanıcıya mesajın gönderildi!')
-        # diger_kullanici_id = ilan sahibinin id'si (URL parametresi bu şekilde tanımlandı)
         return redirect('konusma_detay', diger_kullanici_id=ilan.owner.id, ilan_id=ilan.id)
 
     return redirect('ilan_detay', ilan_id=ilan_id)
@@ -158,24 +225,6 @@ def gelen_kutusu(request):
 
 @login_required
 def konusma_detay(request, diger_kullanici_id, ilan_id):
-    """
-    YETKİ MANTIĞI DÜZELTMESİ
-    ─────────────────────────
-    Eski hatalı mantık:
-        request.user == ilan.owner  VEYA  request.user == diger_kullanici
-
-    Bu mantık neden yanlıştı:
-        Mesajı gönderen kişi (A) ilan sahibine (B) mesaj attığında,
-        URL'e konusma_detay?diger_kullanici_id=B.id gidiliyor.
-        Yetki kontrolünde:
-            A == B (ilan.owner)?   → HAYIR
-            A == B (diger)?        → HAYIR (A != B)
-        Sonuç: 403 hatası — halbuki A konuşmanın tarafı!
-
-    Doğru mantık:
-        URL'deki iki kişi (ilan.owner ve diger_kullanici) konuşmanın
-        taraflarıdır. request.user bu ikisinden biri olmalıdır.
-    """
     from django.http import HttpResponseForbidden
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -183,7 +232,6 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
     diger_kullanici = get_object_or_404(User, id=diger_kullanici_id)
     ilan            = get_object_or_404(Advertisement, id=ilan_id)
 
-    # Konuşmanın iki tarafı: ilan sahibi ve diger_kullanici
     konusma_taraflari = {ilan.owner.id, diger_kullanici.id}
     if request.user.id not in konusma_taraflari:
         return HttpResponseForbidden(
@@ -191,7 +239,6 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
             '<p><a href="/">Ana Sayfaya Dön</a></p>'
         )
 
-    # Mesajları her zaman iki taraf arasında filtrele (owner <-> diger)
     konusma_mesajlari = Message.objects.filter(
         ad=ilan,
     ).filter(
@@ -199,7 +246,6 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
         Q(sender=diger_kullanici, receiver=ilan.owner)
     ).order_by('sent_at')
 
-    # Okundu olarak işaretle
     konusma_mesajlari.filter(
         receiver=request.user,
         is_read=False,
@@ -208,7 +254,6 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
     if request.method == 'POST':
         icerik = request.POST.get('icerik', '').strip()
         if icerik:
-            # Ben kim değilsem o alıcıdır
             alici = diger_kullanici if request.user == ilan.owner else ilan.owner
             Message.objects.create(
                 sender=request.user,
@@ -232,10 +277,6 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
 
 @login_required
 def kullanici_puanla(request, hedef_kullanici_id):
-    """
-    next parametresi ile gelinen sayfaya geri döner.
-    Hem konuşma sayfasından hem profil sayfasından çalışır.
-    """
     from django.contrib.auth import get_user_model
     User        = get_user_model()
     target_user = get_object_or_404(User, id=hedef_kullanici_id)

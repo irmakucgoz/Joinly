@@ -6,6 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ ilan.title }} — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        /* ── FAVORİ BUTONU STİLLERİ ── */
+        .favori-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            background: #fff;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .favori-btn:hover {
+            border-color: #e74c3c;
+            color: #e74c3c;
+            background: #fff5f5;
+        }
+        .favori-btn.aktif {
+            border-color: #e74c3c;
+            background: #fff0f0;
+            color: #e74c3c;
+        }
+        .favori-btn .kalp-icon {
+            font-size: 18px;
+            transition: transform 0.2s ease;
+        }
+        .favori-btn:hover .kalp-icon,
+        .favori-btn.aktif .kalp-icon {
+            transform: scale(1.2);
+        }
+        .favori-sayisi {
+            font-size: 13px;
+            color: #999;
+            margin-left: 2px;
+        }
+        .ilan-aksiyonlar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+    </style>
 </head>
 <body>
 
@@ -19,6 +67,7 @@
             <a href="{% url 'gelen_kutusu' %}" class="navbar-link" style="position:relative;">
                 📬 Mesajlar
             </a>
+            <a href="{% url 'favorilerim' %}" class="navbar-link">❤️ Favorilerim</a>
             <a href="{% url 'profil' %}" class="navbar-link">Profilim</a>
             <a href="{% url 'logout' %}" class="navbar-btn-danger">Çıkış</a>
         {% else %}
@@ -59,6 +108,7 @@
                         <span class="guven-rozeti-kucuk" style="margin-left:4px;">⭐ {{ ilan.owner.average_rating|default:"0" }}</span>
                     </span>
                     <span class="ilan-meta-chip">🕒 {{ ilan.created_at|date:"d F Y" }}</span>
+                    <span class="ilan-meta-chip">❤️ {{ ilan.favoriler.count }} kişi kaydetmiş</span>
                 </div>
             </div>
 
@@ -68,31 +118,54 @@
 
                 <hr class="ilan-ayrac">
 
-                {% if user.is_authenticated %}
-                    {% if ilan.owner == user %}
-                        <div class="ilan-aksiyonlar">
+                <!-- FAVORİ + AKSİYON SATIRI -->
+                <div class="ilan-aksiyonlar-row">
+
+                    {% if user.is_authenticated %}
+                        <!-- FAVORİ BUTONU (AJAX destekli) -->
+                        <button
+                            id="favori-btn"
+                            class="favori-btn {% if is_favori %}aktif{% endif %}"
+                            data-ilan-id="{{ ilan.id }}"
+                            data-csrf="{% csrf_token %}"
+                            onclick="favoriToggle(this)"
+                        >
+                            <span class="kalp-icon">{% if is_favori %}❤️{% else %}🤍{% endif %}</span>
+                            <span id="favori-text">{% if is_favori %}Kaydedildi{% else %}Kaydet{% endif %}</span>
+                            <span class="favori-sayisi" id="favori-sayi">({{ ilan.favoriler.count }})</span>
+                        </button>
+
+                        {% if ilan.owner == user %}
                             <a href="{% url 'ilan_duzenle' ilan.id %}" class="btn btn-secondary">✏️ Düzenle</a>
                             <a href="{% url 'ilan_sil' ilan.id %}" class="btn btn-danger">🗑️ Sil</a>
-                        </div>
+                        {% endif %}
                     {% else %}
-                        <div class="mesaj-formu">
-                            <h3>📨 {{ ilan.owner.first_name }} ile İletişime Geç</h3>
-                            <form method="post" action="{% url 'mesaj_gonder' ilan.id %}">
-                                {% csrf_token %}
-                                <textarea
-                                    name="icerik"
-                                    rows="4"
-                                    placeholder="Merhaba, ilanınla ilgili sormak istediğim bir şey var…"
-                                    class="form-control"
-                                    required
-                                ></textarea>
-                                <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
-                                    Mesajı Gönder
-                                </button>
-                            </form>
-                        </div>
+                        <a href="{% url 'login' %}" class="favori-btn">
+                            <span class="kalp-icon">🤍</span>
+                            <span>Kaydetmek için giriş yap</span>
+                        </a>
                     {% endif %}
-                {% else %}
+
+                </div>
+
+                {% if user.is_authenticated and ilan.owner != user %}
+                    <div class="mesaj-formu">
+                        <h3>📨 {{ ilan.owner.first_name }} ile İletişime Geç</h3>
+                        <form method="post" action="{% url 'mesaj_gonder' ilan.id %}">
+                            {% csrf_token %}
+                            <textarea
+                                name="icerik"
+                                rows="4"
+                                placeholder="Merhaba, ilanınla ilgili sormak istediğim bir şey var…"
+                                class="form-control"
+                                required
+                            ></textarea>
+                            <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
+                                Mesajı Gönder
+                            </button>
+                        </form>
+                    </div>
+                {% elif not user.is_authenticated %}
                     <p class="giris-uyarisi">
                         Mesaj göndermek için <a href="{% url 'login' %}">giriş yap</a>.
                     </p>
@@ -103,6 +176,51 @@
     </div>
 
 </div>
+
+<script>
+    // CSRF token'ı cookie'den oku
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function favoriToggle(btn) {
+        const ilanId = btn.dataset.ilanId;
+        const url    = `/ilan/${ilanId}/favori/`;
+
+        fetch(url, {
+            method : 'POST',
+            headers: {
+                'X-CSRFToken'     : getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(res => res.json())
+        .then(data => {
+            const isFavori = data.is_favori;
+            const sayi     = data.favori_sayisi;
+
+            btn.classList.toggle('aktif', isFavori);
+            btn.querySelector('.kalp-icon').textContent = isFavori ? '❤️' : '🤍';
+            btn.querySelector('#favori-text').textContent = isFavori ? 'Kaydedildi' : 'Kaydet';
+            btn.querySelector('#favori-sayi').textContent = `(${sayi})`;
+        })
+        .catch(() => {
+            // AJAX başarısız olursa normal form POST'una geri dön
+            window.location.href = url;
+        });
+    }
+</script>
 
 </body>
 </html>
