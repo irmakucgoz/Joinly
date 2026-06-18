@@ -131,7 +131,6 @@
                             id="favori-btn"
                             class="favori-btn {% if is_favori %}aktif{% endif %}"
                             data-ilan-id="{{ ilan.id }}"
-                            data-csrf="{% csrf_token %}"
                             onclick="favoriToggle(this)"
                         >
                             <span class="kalp-icon">{% if is_favori %}❤️{% else %}🤍{% endif %}</span>
