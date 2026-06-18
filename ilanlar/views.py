@@ -2,10 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from django.http import JsonResponse
-from .models import Advertisement, Category, Message, Review, Favorite
+from django.http import JsonResponse, HttpResponseForbidden
+from django.contrib.auth import get_user_model
+from .models import Advertisement, Category, Message, Review, Favorite, Conversation
 from .forms import AdvertisementForm
 
+User = get_user_model()
 
 def home(request):
     query      = request.GET.get('q', '').strip()
@@ -110,16 +112,11 @@ def ilan_sil(request, ilan_id):
 
 
 # ─────────────────────────────────────────
-# YENİ: FAVORİLEME VIEW'LARI
+# FAVORİLEME VIEW'LARI
 # ─────────────────────────────────────────
 
 @login_required
 def favori_toggle(request, ilan_id):
-    """
-    POST isteği ile ilanı favorilere ekler veya çıkarır.
-    AJAX ve normal form POST'larını destekler.
-    Durum: {'is_favori': True/False, 'favori_sayisi': int}
-    """
     if request.method != 'POST':
         return redirect('ilan_detay', ilan_id=ilan_id)
 
@@ -128,29 +125,22 @@ def favori_toggle(request, ilan_id):
     favori, created = Favorite.objects.get_or_create(user=request.user, ad=ilan)
 
     if not created:
-        # Zaten favorilerdeydi → çıkar
         favori.delete()
         is_favori = False
     else:
-        # Yeni eklendi
         is_favori = True
 
-    # AJAX isteği ise JSON döndür
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'is_favori'    : is_favori,
             'favori_sayisi': ilan.favoriler.count(),
         })
 
-    # Normal form POST ise ilan detayına geri dön
     return redirect('ilan_detay', ilan_id=ilan_id)
 
 
 @login_required
 def favorilerim(request):
-    """
-    Giriş yapmış kullanıcının kaydettiği tüm ilanları listeler.
-    """
     favori_kayitlar = (
         Favorite.objects
         .filter(user=request.user)
@@ -163,7 +153,7 @@ def favorilerim(request):
 
 
 # ─────────────────────────────────────────
-# MESAJLAŞMA VIEW'LARI
+# YENİ NESİL MESAJLAŞMA VIEW'LARI
 # ─────────────────────────────────────────
 
 @login_required
@@ -181,87 +171,96 @@ def mesaj_gonder(request, ilan_id):
             messages.error(request, 'Mesaj boş olamaz.')
             return redirect('ilan_detay', ilan_id=ilan_id)
 
+        # Bu iki kişi arasında bu ilan için mevcut bir konuşma var mı?
+        conversation = Conversation.objects.filter(
+            ad=ilan
+        ).filter(
+            (Q(participant1=request.user) & Q(participant2=ilan.owner)) |
+            (Q(participant1=ilan.owner) & Q(participant2=request.user))
+        ).first()
+
+        # Yoksa yarat
+        if not conversation:
+            conversation = Conversation.objects.create(
+                ad=ilan,
+                participant1=request.user,
+                participant2=ilan.owner
+            )
+
+        # Mesajı konuşmaya bağla
         Message.objects.create(
+            conversation=conversation,
             sender=request.user,
-            receiver=ilan.owner,
-            ad=ilan,
             content=icerik,
         )
+        
+        # Konuşmanın güncellenme tarihini ileri sar
+        conversation.save()
+
         messages.success(request, f'{ilan.owner.first_name} adlı kullanıcıya mesajın gönderildi!')
-        return redirect('konusma_detay', diger_kullanici_id=ilan.owner.id, ilan_id=ilan.id)
+        return redirect('konusma_detay', conversation_id=conversation.id)
 
     return redirect('ilan_detay', ilan_id=ilan_id)
 
 
 @login_required
 def gelen_kutusu(request):
-    tum_mesajlar = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
-    ).select_related('sender', 'receiver', 'ad').order_by('-sent_at')
+    # Kullanıcının dahil olduğu tüm konuşmaları getir
+    konusmalar_qs = Conversation.objects.filter(
+        Q(participant1=request.user) | Q(participant2=request.user)
+    ).select_related('ad', 'participant1', 'participant2').order_by('-updated_at')
 
-    konusmalar = {}
-    for mesaj in tum_mesajlar:
-        diger   = mesaj.receiver if mesaj.sender == request.user else mesaj.sender
-        anahtar = (diger.id, mesaj.ad.id)
+    konusmalar = []
+    for conv in konusmalar_qs:
+        diger = conv.participant2 if conv.participant1 == request.user else conv.participant1
+        son_mesaj = conv.messages.last()
+        
+        okunmamis = conv.messages.exclude(sender=request.user).filter(is_read=False).exists()
 
-        if anahtar not in konusmalar:
-            konusmalar[anahtar] = {
-                'diger_kullanici': diger,
-                'ilan'           : mesaj.ad,
-                'son_mesaj'      : mesaj,
-                'okunmamis'      : Message.objects.filter(
-                    sender=diger,
-                    receiver=request.user,
-                    ad=mesaj.ad,
-                    is_read=False,
-                ).exists(),
-            }
+        konusmalar.append({
+            'conversation'    : conv,
+            'diger_kullanici' : diger,
+            'ilan'            : conv.ad,
+            'son_mesaj'       : son_mesaj,
+            'okunmamis'       : okunmamis,
+        })
 
     context = {
-        'konusmalar': list(konusmalar.values()),
+        'konusmalar': konusmalar,
     }
     return render(request, 'ilanlar/gelen_kutusu.html', context)
 
 
 @login_required
-def konusma_detay(request, diger_kullanici_id, ilan_id):
-    from django.http import HttpResponseForbidden
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
+def konusma_detay(request, conversation_id):
+    # Artık URL iki ayrı id değil, sadece conversation_id veriyor
+    conversation = get_object_or_404(Conversation, id=conversation_id)
 
-    diger_kullanici = get_object_or_404(User, id=diger_kullanici_id)
-    ilan            = get_object_or_404(Advertisement, id=ilan_id)
-
-    konusma_taraflari = {ilan.owner.id, diger_kullanici.id}
-    if request.user.id not in konusma_taraflari:
+    # Yetki Kontrolü: Sadece bu havuzun katılımcıları görebilir
+    if request.user not in [conversation.participant1, conversation.participant2]:
         return HttpResponseForbidden(
             '<h2>Bu konuşmaya erişim yetkin yok.</h2>'
             '<p><a href="/">Ana Sayfaya Dön</a></p>'
         )
 
-    konusma_mesajlari = Message.objects.filter(
-        ad=ilan,
-    ).filter(
-        Q(sender=ilan.owner, receiver=diger_kullanici) |
-        Q(sender=diger_kullanici, receiver=ilan.owner)
-    ).order_by('sent_at')
+    # Değişken isimlerini senin HTML'inle birebir aynı yapıyoruz
+    diger_kullanici = conversation.participant2 if conversation.participant1 == request.user else conversation.participant1
+    ilan = conversation.ad
+    konusma_mesajlari = conversation.messages.all()
 
-    konusma_mesajlari.filter(
-        receiver=request.user,
-        is_read=False,
-    ).update(is_read=True)
+    # Karşı taraftan gelen mesajları okundu olarak işaretle
+    konusma_mesajlari.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
 
     if request.method == 'POST':
         icerik = request.POST.get('icerik', '').strip()
         if icerik:
-            alici = diger_kullanici if request.user == ilan.owner else ilan.owner
             Message.objects.create(
+                conversation=conversation,
                 sender=request.user,
-                receiver=alici,
-                ad=ilan,
                 content=icerik,
             )
-        return redirect('konusma_detay', diger_kullanici_id=diger_kullanici_id, ilan_id=ilan_id)
+            conversation.save()
+        return redirect('konusma_detay', conversation_id=conversation.id)
 
     context = {
         'diger_kullanici'  : diger_kullanici,
@@ -277,8 +276,6 @@ def konusma_detay(request, diger_kullanici_id, ilan_id):
 
 @login_required
 def kullanici_puanla(request, hedef_kullanici_id):
-    from django.contrib.auth import get_user_model
-    User        = get_user_model()
     target_user = get_object_or_404(User, id=hedef_kullanici_id)
 
     next_url = request.POST.get('next') or request.GET.get('next', '')

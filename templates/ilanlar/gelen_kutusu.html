@@ -44,7 +44,7 @@
     {% if konusmalar %}
         <div class="konusma-listesi">
             {% for k in konusmalar %}
-                <a href="{% url 'konusma_detay' k.diger_kullanici.id k.ilan.id %}"
+                <a href="{% url 'konusma_detay' k.conversation.id %}"
                    class="konusma-karti {% if k.okunmamis %}okunmamis{% endif %}">
                     <div class="avatar">{{ k.diger_kullanici.first_name|first }}</div>
                     <div class="konusma-sag">
