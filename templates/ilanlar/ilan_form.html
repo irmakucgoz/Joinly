@@ -14,7 +14,14 @@
             margin-top: 10px;
             margin-bottom: 15px;
             border: 1px solid var(--border-default, #dbd7ef);
-            display: none; /* İlk başta gizli, konum yazılınca açılacak */
+            /* Harita artık başlangıçtan itibaren görünür durumda;
+               kullanıcı yazı yazmadan da haritaya tıklayarak konum seçebilir. */
+        }
+        .map-hint {
+            font-size: 13px;
+            color: var(--text-muted, #6b7280);
+            margin-top: -8px;
+            margin-bottom: 6px;
         }
     </style>
 </head>
@@ -64,6 +71,7 @@
                 
                 <!-- Google Harita'nın görüneceği Div -->
                 <div id="map" class="map-container"></div>
+                <p class="map-hint">📍 Haritaya tıklayarak veya pini sürükleyerek istediğin konumu seçebilirsin.</p>
             </div>
             
             <button type="submit" class="btn-auth" style="margin-top:16px;">
@@ -106,9 +114,30 @@
         const marker = new google.maps.Marker({
             map: map,
             position: defaultLocation,
-            draggable: true, 
+            draggable: true,
             animation: google.maps.Animation.DROP,
         });
+
+        const geocoder = new google.maps.Geocoder();
+
+        // Ortak fonksiyon: pini yeni bir konuma taşı, gizli inputları doldur
+        // ve adres kutusunu reverse geocoding ile güncelle.
+        function setLocation(latLng) {
+            marker.setPosition(latLng);
+
+            latInput.value = latLng.lat();
+            lngInput.value = latLng.lng();
+
+            geocoder.geocode({ location: latLng }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    input.value = results[0].formatted_address;
+                }
+            });
+        }
+
+        // Başlangıçta varsayılan konumu da forma yazalım (kullanıcı hiç dokunmazsa diye)
+        latInput.value = defaultLocation.lat;
+        lngInput.value = defaultLocation.lng;
 
         // Arama kutusuna Google Autocomplete özelliğini bağlıyoruz
         const autocomplete = new google.maps.places.Autocomplete(input);
@@ -117,15 +146,11 @@
         // Kullanıcı arama kutusundan bir yer seçtiğinde tetiklenir
         autocomplete.addListener('place_changed', function() {
             const place = autocomplete.getPlace();
-            
+
             if (!place.geometry) {
                 window.alert("Bu yer için detaylı konum bulunamadı: '" + place.name + "'");
                 return;
             }
-
-            // Haritayı görünür yapıyoruz
-            mapDiv.style.display = 'block';
-            google.maps.event.trigger(map, 'resize');
 
             // Haritayı seçilen yere odakla
             if (place.geometry.viewport) {
@@ -135,39 +160,26 @@
                 map.setZoom(17);
             }
 
-            // Pini taşı
+            // Pini taşı ve gizli inputları doldur
             marker.setPosition(place.geometry.location);
-
-            // GİZLİ INPUTLARI DOLDUR (Veritabanına gidecek olan veriler)
             latInput.value = place.geometry.location.lat();
             lngInput.value = place.geometry.location.lng();
         });
 
+        // YENİ: Kullanıcı haritada herhangi bir noktaya tıkladığında
+        // pin oraya taşınır ve o konum seçilir (rastgele/istediğin yer seçimi).
+        map.addListener('click', function(event) {
+            setLocation(event.latLng);
+        });
+
         // Kullanıcı pini fareyle tutup sürüklediğinde koordinatları güncelle
         marker.addListener('dragend', function() {
-            const position = marker.getPosition();
-            
-            // Gizli inputları yeni koordinatla güncelle
-            latInput.value = position.lat();
-            lngInput.value = position.lng();
+            setLocation(marker.getPosition());
+        });
 
-            // Sürüklenen yeni yerin adresini metin kutusuna yazdır (Ters Kodlama / Reverse Geocoding)
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ location: position }, function(results, status) {
-                if (status === 'OK' && results[0]) {
-                    input.value = results[0].formatted_address;
-                }
-            });
-        });
-        
-        // Kullanıcı konum kutusuna tıklarsa haritayı baştan göster (Eğer daha önce gizliyse)
-        input.addEventListener('focus', function() {
-            if(mapDiv.style.display === 'none' || mapDiv.style.display === '') {
-                mapDiv.style.display = 'block';
-                google.maps.event.trigger(map, 'resize');
-                map.setCenter(marker.getPosition());
-            }
-        });
+        // Harita yüklendiğinde boyutunun doğru hesaplanması için resize tetikleyelim
+        google.maps.event.trigger(map, 'resize');
+        map.setCenter(marker.getPosition());
     }
 </script>
 
