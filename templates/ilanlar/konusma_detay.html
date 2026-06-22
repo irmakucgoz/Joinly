@@ -39,7 +39,7 @@
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %}
 
-    <!-- Konuşma başlığı -->
+    
     <div class="konusma-header">
         <div class="avatar buyuk">{{ diger_kullanici.first_name|first }}</div>
         <div>
@@ -55,7 +55,7 @@
         </div>
     </div>
 
-    <!-- Mesaj baloncukları -->
+   
     <div class="mesaj-baloncuklari" id="mesajlar">
         {% for mesaj in konusma_mesajlari %}
             <div class="balon {% if mesaj.sender == user %}benim{% else %}karsi{% endif %}">
@@ -86,7 +86,7 @@
             </form>
         </div>
 
-        <!-- Mesaj yazma -->
+       
         <div class="mesaj-yazma-alani">
             <form method="post" id="mesaj-form">
                 {% csrf_token %}
