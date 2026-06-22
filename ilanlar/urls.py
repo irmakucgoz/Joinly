@@ -8,17 +8,17 @@ urlpatterns = [
     path('ilan/<int:ilan_id>/duzenle/', views.ilan_duzenle, name='ilan_duzenle'),
     path('ilan/<int:ilan_id>/sil/', views.ilan_sil, name='ilan_sil'),
 
-    # MESAJLAŞMA
+    
     path('ilan/<int:ilan_id>/mesaj-gonder/', views.mesaj_gonder, name='mesaj_gonder'),
     path('mesajlar/', views.gelen_kutusu, name='gelen_kutusu'),
     
-    # HOCANIN İSTEDİĞİ MANTIK: Artık iki ID yerine sadece 'conversation_id' alıyor
+    
     path('mesajlar/<int:conversation_id>/', views.konusma_detay, name='konusma_detay'),
 
-    # PUANLAMA
+    
     path('puanla/<int:hedef_kullanici_id>/', views.kullanici_puanla, name='kullanici_puanla'),
 
-    # FAVORİLEME
+    
     path('ilan/<int:ilan_id>/favori/', views.favori_toggle, name='favori_toggle'),
     path('favorilerim/', views.favorilerim, name='favorilerim'),
 ]
