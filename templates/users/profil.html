@@ -39,7 +39,7 @@
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
     {% endfor %}
 
-    <!-- Hero Kartı -->
+   
     <div class="profile-hero">
         <div class="profile-avatar">{{ profile_user.first_name|first }}</div>
         <div class="profile-hero-info">
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <!-- Puanlama Formu (sadece başkasının profili) -->
+    
     {% if user.is_authenticated and profile_user != user %}
         <div class="puanlama-kart">
             <div class="puanlama-kart-baslik">🌟 Bu Kullanıcıyı Puanla</div>
@@ -78,7 +78,7 @@
         </div>
     {% endif %}
 
-    <!-- Paylaşılan İlanlar -->
+    
     <h3 class="bolum-baslik">
         📋 {% if profile_user == user %}Paylaştığım İlanlar{% else %}Paylaşılan İlanlar{% endif %}
     </h3>
@@ -100,7 +100,7 @@
         {% endfor %}
     </div>
 
-    <!-- Kullanıcı Yorumları -->
+    
     <h3 class="bolum-baslik">💬 Değerlendirmeler</h3>
 
     <div class="review-listesi">
