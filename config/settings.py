@@ -68,20 +68,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Türkçe dil ve İstanbul saati
 LANGUAGE_CODE = 'tr'
 TIME_ZONE = 'Europe/Istanbul'
 USE_I18N = True
 USE_TZ = True
 
-# Statik dosyalar — tek ve doğru tanım
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Özel kullanıcı modeli
+
 AUTH_USER_MODEL = 'users.CustomUser'
 
-# Giriş sayfası
+
 LOGIN_URL = '/giris/'
 LOGIN_REDIRECT_URL = '/'
 
