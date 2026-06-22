@@ -18,7 +18,7 @@ class Advertisement(models.Model):
     description = models.TextField(verbose_name='Açıklama')
     location    = models.CharField(max_length=100, verbose_name='Konum')
     
-    # ── HARİTA İÇİN EKLENEN KOORDİNAT ALANLARI ──
+    
     latitude    = models.FloatField(verbose_name='Enlem', null=True, blank=True)
     longitude   = models.FloatField(verbose_name='Boylam', null=True, blank=True)
     
@@ -27,9 +27,7 @@ class Advertisement(models.Model):
     def __str__(self):
         return self.title
 
-# ─────────────────────────────────────────
-# YENİ: KONUŞMA (CONVERSATION) MODELİ (HOCANIN İSTEDİĞİ YAPI)
-# ─────────────────────────────────────────
+
 class Conversation(models.Model):
     ad = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name='conversations')
     participant1 = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='conversations_started', on_delete=models.CASCADE)
@@ -44,9 +42,7 @@ class Conversation(models.Model):
     def __str__(self):
         return f"Konuşma ID: {self.id} | {self.participant1.username} & {self.participant2.username}"
 
-# ─────────────────────────────────────────
-# GÜNCELLENEN: MESAJ MODELİ
-# ─────────────────────────────────────────
+
 class Message(models.Model):
     # Eski 'receiver' ve 'ad' silindi, yerine 'conversation' geldi.
     conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
@@ -75,14 +71,9 @@ class Review(models.Model):
     def __str__(self):
         return f'{self.reviewer} → {self.target_user} ({self.rating}/5)'
 
-# ─────────────────────────────────────────
-# FAVORİLEME MODELİ
-# ─────────────────────────────────────────
+
 class Favorite(models.Model):
-    """
-    Kullanıcının bir ilanı kaydetmesini temsil eder.
-    Her (user, ad) çifti benzersizdir — aynı ilan iki kez kaydedilemez.
-    """
+    
     user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoriler')
     ad         = models.ForeignKey(Advertisement, on_delete=models.CASCADE, related_name='favoriler')
     created_at = models.DateTimeField(auto_now_add=True)
