@@ -66,10 +66,10 @@
         <form method="POST">
             {% csrf_token %}
             <div style="text-align:left;">
-                <!-- Django form alanları (Gizli koordinat inputları dahil) -->
+                
                 {{ form.as_p }}
                 
-                <!-- Google Harita'nın görüneceği Div -->
+                
                 <div id="map" class="map-container"></div>
                 <p class="map-hint">📍 Haritaya tıklayarak veya pini sürükleyerek istediğin konumu seçebilirsin.</p>
             </div>
@@ -85,11 +85,7 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- GOOGLE MAPS API VE OTOMATİK TAMAMLAMA KODU -->
-<!-- ========================================== -->
 
-<!-- NOT: "YOUR_API_KEY" yazan yere kendi Google Maps API anahtarını gireceğiz -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIzB4ckRd-THJthpgv0O19K3PDFb74yV4&libraries=places&callback=initMap" async defer></script>
 
 <script>
@@ -102,7 +98,7 @@
         // Varsayılan merkez: Galatasaray Üniversitesi / İstanbul
         const defaultLocation = { lat: 41.0458, lng: 29.0205 };
 
-        // Haritayı oluşturuyoruz
+        
         const map = new google.maps.Map(mapDiv, {
             center: defaultLocation,
             zoom: 14,
@@ -110,7 +106,7 @@
             streetViewControl: false,
         });
 
-        // Sürüklenebilir kırmızı pinimizi oluşturuyoruz
+        
         const marker = new google.maps.Marker({
             map: map,
             position: defaultLocation,
@@ -120,8 +116,7 @@
 
         const geocoder = new google.maps.Geocoder();
 
-        // Ortak fonksiyon: pini yeni bir konuma taşı, gizli inputları doldur
-        // ve adres kutusunu reverse geocoding ile güncelle.
+        
         function setLocation(latLng) {
             marker.setPosition(latLng);
 
@@ -135,15 +130,15 @@
             });
         }
 
-        // Başlangıçta varsayılan konumu da forma yazalım (kullanıcı hiç dokunmazsa diye)
+        
         latInput.value = defaultLocation.lat;
         lngInput.value = defaultLocation.lng;
 
-        // Arama kutusuna Google Autocomplete özelliğini bağlıyoruz
+       
         const autocomplete = new google.maps.places.Autocomplete(input);
         autocomplete.bindTo('bounds', map);
 
-        // Kullanıcı arama kutusundan bir yer seçtiğinde tetiklenir
+       
         autocomplete.addListener('place_changed', function() {
             const place = autocomplete.getPlace();
 
@@ -152,7 +147,7 @@
                 return;
             }
 
-            // Haritayı seçilen yere odakla
+            
             if (place.geometry.viewport) {
                 map.fitBounds(place.geometry.viewport);
             } else {
@@ -160,24 +155,23 @@
                 map.setZoom(17);
             }
 
-            // Pini taşı ve gizli inputları doldur
+            
             marker.setPosition(place.geometry.location);
             latInput.value = place.geometry.location.lat();
             lngInput.value = place.geometry.location.lng();
         });
 
-        // YENİ: Kullanıcı haritada herhangi bir noktaya tıkladığında
-        // pin oraya taşınır ve o konum seçilir (rastgele/istediğin yer seçimi).
+        
         map.addListener('click', function(event) {
             setLocation(event.latLng);
         });
 
-        // Kullanıcı pini fareyle tutup sürüklediğinde koordinatları güncelle
+        
         marker.addListener('dragend', function() {
             setLocation(marker.getPosition());
         });
 
-        // Harita yüklendiğinde boyutunun doğru hesaplanması için resize tetikleyelim
+       
         google.maps.event.trigger(map, 'resize');
         map.setCenter(marker.getPosition());
     }
