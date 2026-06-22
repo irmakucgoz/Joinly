@@ -8,6 +8,6 @@ urlpatterns = [
     path('giris/',                     views.login_view,       name='login'),
     path('cikis/',                     views.logout_view,      name='logout'),
     path('profil/',                    views.profil_sayfasi,   name='profil'),
-    # Herkese açık profil sayfası — /kullanici/5/ gibi
+    
     path('kullanici/<int:kullanici_id>/', views.kullanici_profil, name='kullanici_profil'),
 ]
