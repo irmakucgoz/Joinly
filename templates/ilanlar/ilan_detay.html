@@ -7,7 +7,7 @@
     <title>{{ ilan.title }} — Joinly</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
-        /* ── FAVORİ BUTONU STİLLERİ ── */
+        
         .favori-btn {
             display: inline-flex;
             align-items: center;
@@ -90,7 +90,7 @@
     <div class="ilan-detay-wrap">
         <div class="ilan-detay-card">
 
-            <!-- Üst alan -->
+            
             <div class="ilan-detay-header">
                 {% if ilan.category %}
                     <span class="kategori-badge" style="background:{{ ilan.category.color }}">
@@ -116,17 +116,17 @@
                 </div>
             </div>
 
-            <!-- Gövde -->
+            
             <div class="ilan-detay-body">
                 <div class="ilan-aciklama">{{ ilan.description }}</div>
 
                 <hr class="ilan-ayrac">
 
-                <!-- FAVORİ + AKSİYON SATIRI -->
+                
                 <div class="ilan-aksiyonlar-row">
 
                     {% if user.is_authenticated %}
-                        <!-- FAVORİ BUTONU (AJAX destekli) -->
+                       
                         <button
                             id="favori-btn"
                             class="favori-btn {% if is_favori %}aktif{% endif %}"
@@ -181,7 +181,7 @@
 </div>
 
 <script>
-    // CSRF token'ı cookie'den oku
+    
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -219,7 +219,7 @@
             btn.querySelector('#favori-sayi').textContent = `(${sayi})`;
         })
         .catch(() => {
-            // AJAX başarısız olursa normal form POST'una geri dön
+            
             window.location.href = url;
         });
     }
