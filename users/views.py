@@ -48,7 +48,7 @@ def register_view(request):
 
 
 def login_view(request):
-    # Eski mesajları temizle (çıkış yaptınız, hoş geldiniz vb.)
+    
     storage = messages.get_messages(request)
     for _ in storage:
         pass
@@ -88,7 +88,7 @@ def logout_view(request):
 
 @login_required
 def profil_sayfasi(request):
-    """Giriş yapmış kullanıcının kendi profil sayfası."""
+    
     from ilanlar.models import Advertisement
     kullanici_ilanlari = Advertisement.objects.filter(
         owner=request.user
@@ -102,11 +102,7 @@ def profil_sayfasi(request):
 
 
 def kullanici_profil(request, kullanici_id):
-    """
-    Herkese açık kullanıcı profil sayfası.
-    Giriş yapılmasa da görüntülenebilir.
-    Puanlama formu giriş gerektirdiği için template'de kontrol edilir.
-    """
+    
     from ilanlar.models import Advertisement
     profile_user       = get_object_or_404(CustomUser, id=kullanici_id)
     kullanici_ilanlari = Advertisement.objects.filter(
