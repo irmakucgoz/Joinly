@@ -39,7 +39,7 @@ def home(request):
     else:
         ilanlar = ilanlar.order_by('-created_at')
 
-    # Giriş yapmış kullanıcının favori ilan id'lerini bir küme olarak al
+    
     favori_ilan_idleri = set()
     if request.user.is_authenticated:
         favori_ilan_idleri = set(
@@ -61,7 +61,7 @@ def home(request):
 def ilan_detay(request, ilan_id):
     ilan = get_object_or_404(Advertisement, id=ilan_id)
 
-    # Bu ilanın kullanıcının favorisinde olup olmadığını kontrol et
+   
     is_favori = False
     if request.user.is_authenticated:
         is_favori = Favorite.objects.filter(user=request.user, ad=ilan).exists()
@@ -111,9 +111,6 @@ def ilan_sil(request, ilan_id):
     return render(request, 'ilanlar/ilan_sil_onay.html', {'ilan': ilan})
 
 
-# ─────────────────────────────────────────
-# FAVORİLEME VIEW'LARI
-# ─────────────────────────────────────────
 
 @login_required
 def favori_toggle(request, ilan_id):
@@ -152,9 +149,7 @@ def favorilerim(request):
     })
 
 
-# ─────────────────────────────────────────
-# YENİ NESİL MESAJLAŞMA VIEW'LARI
-# ─────────────────────────────────────────
+
 
 @login_required
 def mesaj_gonder(request, ilan_id):
@@ -171,7 +166,7 @@ def mesaj_gonder(request, ilan_id):
             messages.error(request, 'Mesaj boş olamaz.')
             return redirect('ilan_detay', ilan_id=ilan_id)
 
-        # Bu iki kişi arasında bu ilan için mevcut bir konuşma var mı?
+        
         conversation = Conversation.objects.filter(
             ad=ilan
         ).filter(
@@ -179,7 +174,7 @@ def mesaj_gonder(request, ilan_id):
             (Q(participant1=ilan.owner) & Q(participant2=request.user))
         ).first()
 
-        # Yoksa yarat
+        
         if not conversation:
             conversation = Conversation.objects.create(
                 ad=ilan,
@@ -187,14 +182,14 @@ def mesaj_gonder(request, ilan_id):
                 participant2=ilan.owner
             )
 
-        # Mesajı konuşmaya bağla
+        
         Message.objects.create(
             conversation=conversation,
             sender=request.user,
             content=icerik,
         )
         
-        # Konuşmanın güncellenme tarihini ileri sar
+        
         conversation.save()
 
         messages.success(request, f'{ilan.owner.first_name} adlı kullanıcıya mesajın gönderildi!')
@@ -205,7 +200,7 @@ def mesaj_gonder(request, ilan_id):
 
 @login_required
 def gelen_kutusu(request):
-    # Kullanıcının dahil olduğu tüm konuşmaları getir
+    
     konusmalar_qs = Conversation.objects.filter(
         Q(participant1=request.user) | Q(participant2=request.user)
     ).select_related('ad', 'participant1', 'participant2').order_by('-updated_at')
@@ -233,22 +228,22 @@ def gelen_kutusu(request):
 
 @login_required
 def konusma_detay(request, conversation_id):
-    # Artık URL iki ayrı id değil, sadece conversation_id veriyor
+    
     conversation = get_object_or_404(Conversation, id=conversation_id)
 
-    # Yetki Kontrolü: Sadece bu havuzun katılımcıları görebilir
+   
     if request.user not in [conversation.participant1, conversation.participant2]:
         return HttpResponseForbidden(
             '<h2>Bu konuşmaya erişim yetkin yok.</h2>'
             '<p><a href="/">Ana Sayfaya Dön</a></p>'
         )
 
-    # Değişken isimlerini senin HTML'inle birebir aynı yapıyoruz
+    
     diger_kullanici = conversation.participant2 if conversation.participant1 == request.user else conversation.participant1
     ilan = conversation.ad
     konusma_mesajlari = conversation.messages.all()
 
-    # Karşı taraftan gelen mesajları okundu olarak işaretle
+   
     konusma_mesajlari.exclude(sender=request.user).filter(is_read=False).update(is_read=True)
 
     if request.method == 'POST':
@@ -270,9 +265,6 @@ def konusma_detay(request, conversation_id):
     return render(request, 'ilanlar/konusma_detay.html', context)
 
 
-# ─────────────────────────────────────────
-# PUANLAMA SİSTEMİ VIEW'I
-# ─────────────────────────────────────────
 
 @login_required
 def kullanici_puanla(request, hedef_kullanici_id):
