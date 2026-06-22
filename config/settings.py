@@ -5,8 +5,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# GÜVENLİK: Gerçek projede bu satırı .env dosyasına taşı!
-# Şimdilik burada bırakıyoruz ama production'da asla böyle bırakma.
+
 SECRET_KEY = 'django-insecure-!2g2vizlelgqd7fg)pnu9&^znd3slxo$9sf-frun+$(+(58ti#'
 
 DEBUG = True
